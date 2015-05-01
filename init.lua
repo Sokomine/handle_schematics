@@ -1,4 +1,5 @@
 
+handle_schematics = {}
 
 handle_schematics.modpath = minetest.get_modpath( "handle_schematics");
 
@@ -7,7 +8,6 @@ handle_schematics.modpath = minetest.get_modpath( "handle_schematics");
 dofile(handle_schematics.modpath.."/worldedit_file.lua")
 
 -- uses handle_schematics.* namespace
-handle_schematics = {}
 -- reads and analyzes .mts files (minetest schematics)
 dofile(handle_schematics.modpath.."/analyze_mts_file.lua") 
 -- reads and analyzes worldedit files
