@@ -10,6 +10,9 @@ build_chest.preview_image_draw_tile = function( content_id, image, x, z, dx, dz,
 			return '';
 		end
 		local tiles = node_def.tiles;
+		if( not( tiles )) then
+			tiles = node_def.tile_images;
+		end
 		local tile = nil;
 		if( tiles ~= nil ) then
 			if( not(tile_nr) or tile_nr > #tiles or tile_nr < 1 ) then
