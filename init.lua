@@ -21,6 +21,8 @@ dofile(handle_schematics.modpath.."/handle_schematics_misc.lua")
 -- these functions are responsible for the optional dependencies; they check
 -- which nodes are available and may be offered as possible replacements
 replacements_group = {};
+-- the replacement groups do add some non-ground nodes; needed by mg_villages
+replacements_group.node_is_ground = {}
 dofile(handle_schematics.modpath.."/replacements_wood.lua")
 dofile(handle_schematics.modpath.."/replacements_realtest.lua")
 dofile(handle_schematics.modpath.."/replacements_farming.lua")

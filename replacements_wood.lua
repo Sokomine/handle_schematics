@@ -119,10 +119,8 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 		replacements_group['wood'].data[ wood_name ] = data;
 
 		-- none of the wood nodes counts as ground
-		if( mg_villages and mg_villages.node_is_ground ) then
-			for _,v in ipairs( data ) do
-				mg_villages.node_is_ground[ v ] = false;
-			end
+		for _,v in ipairs( data ) do
+			replacements_group.node_is_ground[ v ] = false;
 		end
 
 
