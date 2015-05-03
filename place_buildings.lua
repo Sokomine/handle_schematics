@@ -153,6 +153,30 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			new_nodes[ i ].is_replaced = 1; -- currently unused
 		end
 
+		-- those chests do not exist as regular nodes; they're just placeholders
+		if(        node_name == 'cottages:chest_private'
+		   or      node_name == 'cottages:chest_work'
+		   or      node_name == 'cottages:chest_storage' ) then
+
+			new_nodes[ i ].is_replaced   = 1; -- currently unused
+			new_nodes[ i ].special_chest = node_name;
+			-- TODO: perhaps use a locked chest owned by the mob living there?
+			-- place a normal chest here
+			new_nodes[ i ].new_content   = cid.c_chest;
+			new_nodes[ i ].special_chest = node_name;
+			new_node_name = 'default:chest';
+
+		elseif(new_node_name == 'cottages:chest_private'
+		   or  new_node_name == 'cottages:chest_work'
+		   or  new_node_name == 'cottages:chest_storage' ) then
+
+			new_nodes[ i ].is_replaced   = 1; -- currently unused
+			new_nodes[ i ].special_chest = new_node_name;
+			-- TODO: perhaps use a locked chest owned by the mob living there?
+			-- place a normal chest here
+			new_nodes[ i ].new_content   = cid.c_chest;
+		end
+
 		-- only existing nodes can be placed
 		if( new_node_name and minetest.registered_nodes[ new_node_name ]) then
 							
@@ -188,15 +212,6 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			   or   new_content == cid.c_chest_spruce) then
 				-- we're dealing with a chest that might need filling
 				new_nodes[ i ].is_chestlike = 1;
-
-			elseif( new_content == cid.c_chest_private
-			   or   new_content == cid.c_chest_work
-			   or   new_content == cid.c_chest_storage ) then
-				-- we're dealing with a chest that might need filling
-				new_nodes[ i ].is_chestlike = 1;
-				-- TODO: perhaps use a locked chest owned by the mob living there?
-				-- place a normal chest here
-				new_nodes[ i ].new_content  = cid.c_chest;
 
 			elseif( new_content == cid.c_sign ) then
 				-- the sign may require some text to be written on it
@@ -462,7 +477,7 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 
 					-- we're dealing with a chest that might need filling
 					elseif( n.is_chestlike ) then
-						table.insert( extra_calls.chests, {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos});
+						table.insert( extra_calls.chests, {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos, typ_name=n.special_chest});
 
 					-- the sign may require some text to be written on it
 					elseif( n.is_sign ) then
@@ -567,9 +582,6 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 
 	cid.c_chest            = handle_schematics.get_content_id_replaced( 'default:chest',          replacements );
 	cid.c_chest_locked     = handle_schematics.get_content_id_replaced( 'default:chest_locked',   replacements );
-	cid.c_chest_private    = handle_schematics.get_content_id_replaced( 'cottages:chest_private', replacements );
-	cid.c_chest_work       = handle_schematics.get_content_id_replaced( 'cottages:chest_work',    replacements );
-	cid.c_chest_storage    = handle_schematics.get_content_id_replaced( 'cottages:chest_storage', replacements );
 	cid.c_chest_shelf      = handle_schematics.get_content_id_replaced( 'cottages:shelf',         replacements );
 	cid.c_chest_ash        = handle_schematics.get_content_id_replaced( 'trees:chest_ash',        replacements );
 	cid.c_chest_aspen      = handle_schematics.get_content_id_replaced( 'trees:chest_aspen',      replacements );
@@ -669,9 +681,6 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 
 	cid.c_chest            = handle_schematics.get_content_id_replaced( 'default:chest',          replacements );
 	cid.c_chest_locked     = handle_schematics.get_content_id_replaced( 'default:chest_locked',   replacements );
-	cid.c_chest_private    = handle_schematics.get_content_id_replaced( 'cottages:chest_private', replacements );
-	cid.c_chest_work       = handle_schematics.get_content_id_replaced( 'cottages:chest_work',    replacements );
-	cid.c_chest_storage    = handle_schematics.get_content_id_replaced( 'cottages:chest_storage', replacements );
 	cid.c_chest_shelf      = handle_schematics.get_content_id_replaced( 'cottages:shelf',         replacements );
 	cid.c_chest_ash        = handle_schematics.get_content_id_replaced( 'trees:chest_ash',        replacements );
 	cid.c_chest_aspen      = handle_schematics.get_content_id_replaced( 'trees:chest_aspen',      replacements );
