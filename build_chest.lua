@@ -562,6 +562,8 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
 				'0_0.mts';
 
 -- TODO: handle metadata
+			-- create directory for the schematics (same path as WorldEdit uses)
+			os.execute("mkdir \""..minetest.get_worldpath().."/schems".. "\"");
 			-- store a backup of the original landscape
 			minetest.create_schematic( start_pos, end_pos, nil, filename, nil);
 			meta:set_string('backup', filename );
@@ -695,10 +697,11 @@ mirror = nil;
 			elseif( node.param2 == 2 ) then
 				filename = filename..'_'..burried..'_270';
 			end
-			-- TODO: what if there is no schems folder in that directory?
 			-- TODO: forbid overwriting existing files?
 			local worldpath = minetest.get_worldpath();
 			local filename_complete = worldpath..'/schems/'..filename..'.mts';
+			-- make sure the directory exists...
+			os.execute("mkdir \""..minetest.get_worldpath().."/schems".. "\"");
 			-- really save it with probability_list and slice_prob_list both as nil
 			minetest.create_schematic( p1, p2, nil, filename_complete, nil);
 
