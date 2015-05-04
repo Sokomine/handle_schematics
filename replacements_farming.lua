@@ -89,9 +89,14 @@ replacements_group['farming'].add_material = function( fruit, fruit_item, prefix
 	replacements_group['farming'].data[ fruit_item ] = data;
 
 	-- farming nodes do not count as ground (except for soil - which is not handled here)
+	local c_ignore = minetest.get_content_id( 'ignore' );
 	for _,v in ipairs( data ) do
-		replacements_group.node_is_ground[ v ] = false;
+		local id = minetest.get_content_id( v );
+		if( id and id ~= c_ignore ) then
+			replacements_group.node_is_ground[ id ] = false;
+		end
 	end
+
 
 	if( is_loaded and mobf_trader and mobf_trader.add_trader ) then
 
@@ -126,6 +131,7 @@ replacements_group['farming'].construct_farming_type_list = function()
 	-- farming from minetest_game
 	replacements_group['farming'].add_material( 'wheat',  'farming:wheat',                   'farming:', '_', '' );
 	replacements_group['farming'].add_material( 'cotton', 'farming:cotton',                  'farming:', '_', '' );
+	replacements_group['farming'].add_material( 'pumpkin','farming:pumpkin',                 'farming:', '_', '' );
 
 	-- RealTest
 	replacements_group['farming'].add_material( 'flax',   'farming:string',                  'farming:', '_', '' );
