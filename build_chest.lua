@@ -126,6 +126,25 @@ end
 
 
 
+build_chest.show_size_data = function( building_name )
+
+	if( not( building_name )
+	   or building_name == ''
+	   or not( build_chest.building[ building_name ] )
+	   or not( build_chest.building[ building_name ].size )) then
+		return "";
+	end
+
+	local size = build_chest.building[ building_name ].size;
+	-- show which building has been selected
+	return "label[0.3,9.5;Selected building:]"..
+		"label[2.3,9.5;"..minetest.formspec_escape(building_name).."]"..
+		-- size of the building
+		"label[0.3,9.8;Size ( wide x length x height ):]"..
+		"label[4.3,9.8;"..tostring( size.x )..' x '..tostring( size.z )..' x '..tostring( size.y ).."]";
+end
+
+
 
 build_chest.update_formspec = function( pos, page, player, fields )
 
@@ -164,19 +183,8 @@ build_chest.update_formspec = function( pos, page, player, fields )
                             "label[0.3,0.8;Part of village:]" .."label[3.3,0.8;"..(village_name or "?").."]"
                                                               .."label[7.3,0.8;located at "..(minetest.pos_to_string( village_pos ) or '?').."]"..
                             "label[0.3,1.2;Owned by:]"        .."label[3.3,1.2;"..(owner_name or "?").."]"..
-                            "label[3.3,1.6;Click on a menu entry to select it:]";
-
-
-	if( building_name and building_name ~= '' and build_chest.building[ building_name ] and build_chest.building[ building_name ].size) then
-		local size = build_chest.building[ building_name ].size;
-		formspec = formspec..
-				-- show which building has been selected
-				"label[0.3,9.5;Selected building:]"..
-				"label[2.3,9.5;"..minetest.formspec_escape(building_name).."]"..
-				-- size of the building
-				"label[0.3,9.8;Size ( wide x length x height ):]"..
-				"label[4.3,9.8;"..tostring( size.x )..' x '..tostring( size.z )..' x '..tostring( size.y ).."]";
-	end
+                            "label[3.3,1.6;Click on a menu entry to select it:]"..
+			    build_chest.show_size_data( building_name );
 
 	local current_path = minetest.deserialize( meta:get_string( 'current_path' ) or 'return {}' );
 	if( #current_path > 0 ) then
@@ -383,7 +391,9 @@ build_chest.update_formspec = function( pos, page, player, fields )
 		meta:set_string( 'building_name', options[1] );
 		local start_pos = build_chest.get_start_pos( pos );
 		if( type(start_pos)=='table' and start_pos and start_pos.x and build_chest.building[ options[1]].size) then
--- TODO: also show size and such
+			-- size information has just been read; we can now display it
+			formspec = formspec..build_chest.show_size_data( building_name );
+
 			-- do replacements for realtest where necessary (this needs to be done only once)
 			local replacements = {};
 			replacements_group['realtest'].replace( replacements );
@@ -555,20 +565,23 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
 		local end_pos       = minetest.deserialize( meta:get_string('end_pos'));
 		local filename      = meta:get_string('backup' );
 		if( not( filename ) or filename == "" ) then
-			-- <worldname>/backup_PLAYERNAME_x_y_z_burried_rotation.mts
-			filename = minetest.get_worldpath()..'/backup_'..
+			local base_filename = 'backup_'..
                                 meta:get_string('owner')..'_'..
                                 tostring( start_pos.x )..':'..tostring( start_pos.y )..':'..tostring( start_pos.z )..'_'..
-				'0_0.mts';
+				'0_0';
 
 -- TODO: handle metadata
 			-- create directory for the schematics (same path as WorldEdit uses)
-			os.execute("mkdir \""..minetest.get_worldpath().."/schems".. "\"");
+			save_restore.create_directory( '/schems' );
 			-- store a backup of the original landscape
-			minetest.create_schematic( start_pos, end_pos, nil, filename, nil);
-			meta:set_string('backup', filename );
+			-- <worldname>/backup_PLAYERNAME_x_y_z_burried_rotation.mts
+			filename = minetest.get_worldpath()..'/schems/'..base_filename..'.mts';
+			minetest.create_schematic(   start_pos, end_pos, nil, filename, nil);
+			-- save metadata and clear it so that the new building can be placed
+			handle_schematics.save_meta( start_pos, end_pos, base_filename, true );
+			meta:set_string('backup', base_filename );
 
-			minetest.chat_send_player( pname, 'CREATING backup schematic for this place in '..tostring( filename )..'.');
+			minetest.chat_send_player( pname, 'CREATING backup schematic for this place in \"schems/'..base_filename..'.mts\".');
 		end
 		
 -- TODO: use scaffolding here (exchange some replacements)
@@ -590,9 +603,13 @@ mirror = nil;
 		local start_pos     = minetest.deserialize( meta:get_string('start_pos'));
 		local end_pos       = minetest.deserialize( meta:get_string('end_pos'));
 		local backup_file   = meta:get_string( 'backup' );
-		if( start_pos and end_pos and start_pos.x and end_pos.x and backup_file and backup_file ~= "") then
-			minetest.place_schematic( start_pos, backup_file, "0", {}, true );
-			meta:set_string('backup', nil );
+		if( start_pos and end_pos and start_pos.x and end_pos.x and backup_file and backup_file ~= "" ) then
+			if( save_restore.file_exists( 'schems/'..backup_file..'.mts' )) then
+				filename = minetest.get_worldpath()..'/schems/'..backup_file..'.mts';
+				minetest.place_schematic( start_pos, filename, "0", {}, true );
+				handle_schematics.restore_meta( backup_file );
+				meta:set_string('backup', nil );
+			end
 		end
 	
 
@@ -700,10 +717,12 @@ mirror = nil;
 			-- TODO: forbid overwriting existing files?
 			local worldpath = minetest.get_worldpath();
 			local filename_complete = worldpath..'/schems/'..filename..'.mts';
-			-- make sure the directory exists...
-			os.execute("mkdir \""..minetest.get_worldpath().."/schems".. "\"");
+			-- create directory for the schematics (same path as WorldEdit uses)
+			save_restore.create_directory( '/schems' );
 			-- really save it with probability_list and slice_prob_list both as nil
 			minetest.create_schematic( p1, p2, nil, filename_complete, nil);
+			-- save metadata, but do not clear it
+			handle_schematics.save_meta( start_pos, end_pos, base_filename, false);
 
 			-- store that we have saved this area
 			meta:set_string('saved_as_filename', filename);

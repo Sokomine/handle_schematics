@@ -17,6 +17,10 @@ dofile(handle_schematics.modpath.."/rotate.lua")
 -- count nodes, take param2 into account for rotation etc.
 dofile(handle_schematics.modpath.."/handle_schematics_misc.lua") 
 
+-- store and restore metadata
+dofile(handle_schematics.modpath.."/save_restore.lua");
+dofile(handle_schematics.modpath.."/handle_schematics_meta.lua");
+
 -- uses replacements_group.* namespace
 -- these functions are responsible for the optional dependencies; they check
 -- which nodes are available and may be offered as possible replacements
