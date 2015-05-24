@@ -570,16 +570,12 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
                                 tostring( start_pos.x )..':'..tostring( start_pos.y )..':'..tostring( start_pos.z )..'_'..
 				'0_0';
 
--- TODO: handle metadata
-			-- create directory for the schematics (same path as WorldEdit uses)
-			save_restore.create_directory( '/schems' );
 			-- store a backup of the original landscape
 			-- <worldname>/backup_PLAYERNAME_x_y_z_burried_rotation.mts
-			filename = minetest.get_worldpath()..'/schems/'..base_filename..'.mts';
-			minetest.create_schematic(   start_pos, end_pos, nil, filename, nil);
-			-- save metadata and clear it so that the new building can be placed
-			handle_schematics.save_meta( start_pos, end_pos, base_filename, true );
+			handle_schematics.create_schematic_with_meta( start_pos, end_pos, base_filename );
 			meta:set_string('backup', base_filename );
+			-- clear metadata so that the new building can be placed
+			handle_schematics.clear_meta( start_pos, end_pos );
 
 			minetest.chat_send_player( pname, 'CREATING backup schematic for this place in \"schems/'..base_filename..'.mts\".');
 		end
@@ -717,12 +713,8 @@ mirror = nil;
 			-- TODO: forbid overwriting existing files?
 			local worldpath = minetest.get_worldpath();
 			local filename_complete = worldpath..'/schems/'..filename..'.mts';
-			-- create directory for the schematics (same path as WorldEdit uses)
-			save_restore.create_directory( '/schems' );
-			-- really save it with probability_list and slice_prob_list both as nil
-			minetest.create_schematic( p1, p2, nil, filename_complete, nil);
-			-- save metadata, but do not clear it
-			handle_schematics.save_meta( start_pos, end_pos, base_filename, false);
+
+			handle_schematics.create_schematic_with_meta( p1, p2, filename );
 
 			-- store that we have saved this area
 			meta:set_string('saved_as_filename', filename);
