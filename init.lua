@@ -55,3 +55,5 @@ dofile(handle_schematics.modpath.."/village_traders.lua")
 dofile(handle_schematics.modpath.."/place_buildings.lua")
 
 -- dofile(handle_schematics.modpath.."/fill_chest.lua")
+
+dofile(handle_schematics.modpath.."/nodes.lua")
