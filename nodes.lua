@@ -32,10 +32,11 @@ minetest.register_craft({
 minetest.register_node("handle_schematics:rope", {
         description = "rope for climbing",
         tiles = {"handle_schematics_rope.png"},
-	groups = {snappy=3,choppy=3,oddly_breakable_by_hand=3},
+	groups = {snappy=3,choppy=3,oddly_breakable_by_hand=3,rail=1,connect_to_raillike=1},--connect_to_raillike=minetest.raillike_group("rail")},
         walkable = false,
         climbable = true,
         paramtype = "light",
+        sunlight_propagates = true,
         drawtype = "plantlike",
 	can_dig = function(pos, player)
 			local below = minetest.get_node( {x=pos.x, y=pos.y-1, z=pos.z});
@@ -56,3 +57,29 @@ minetest.register_craft({
 		{"default:string"}
         }
 })
+
+minetest.register_node("handle_schematics:ladder", {
+	description = "Ladder with rail support",
+	drawtype = "signlike",
+	tiles = {"default_ladder.png^default_rail.png^handle_schematics_rope.png"},
+	inventory_image = "default_ladder.png",
+	wield_image = "default_ladder.png",
+	paramtype = "light",
+	paramtype2 = "wallmounted",
+	sunlight_propagates = true,
+	walkable = false,
+	climbable = true,
+	is_ground_content = false,
+	selection_box = {
+		type = "wallmounted",
+		--wall_top = = <default>
+		--wall_bottom = = <default>
+		--wall_side = = <default>
+	},
+	groups = {choppy=2,oddly_breakable_by_hand=3,rail=1,connect_to_raillike=1}, --connect_to_raillike=minetest.raillike_group("rail")},
+	legacy_wallmounted = true,
+	sounds = default.node_sound_wood_defaults(),
+})
+
+
+
