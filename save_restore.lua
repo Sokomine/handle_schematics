@@ -55,6 +55,10 @@ save_restore.create_directory = function( filename )
 	local path = minetest.get_worldpath()..'/'..filename;
 
 	if( not( save_restore.file_exists( filename ))) then
-		os.execute("mkdir \""..minetest.get_worldpath().."/schems".. "\"");
+		if( minetest.mkdir ) then
+			minetest.mkdir( minetest.get_worldpath().."/schems".. "\"");
+		else
+			os.execute("mkdir \""..minetest.get_worldpath().."/schems".. "\"");
+		end
 	end
 end
