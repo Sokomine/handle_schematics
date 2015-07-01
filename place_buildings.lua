@@ -600,7 +600,11 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 		-- roads are only placed if there are at least mg_villages.MINIMAL_BUILDUNGS_FOR_ROAD_PLACEMENT buildings in the village
 		if( not(pos.btype) or pos.btype ~= 'road' or village.anz_buildings > mg_villages.MINIMAL_BUILDUNGS_FOR_ROAD_PLACEMENT )then 
 			-- replacements are in table format for mapgen-based building spawning
-			generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, mg_villages.road_node )
+			local road_material = mg_villages.road_node;
+			if( pos.road_material ) then
+				road_material = pos.road_material;
+			end
+			generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, road_material )
 		end
 	end
 
@@ -795,9 +799,20 @@ end
 
 handle_schematics.place_road = function(minp, maxp, data, param2_data, a, c_road_node, pos, c_air )
 	local param2 = 0;
-	if( pos.bsizex > 2 ) then
+	if( pos.bsizex > 2 and pos.bsizex > pos.bsizez) then
 		param2 = 1;
 	end
+
+--[[
+	local is_main_road  = false;
+	local c_road_node   = minetest.get_content_id('default:coalblock');
+	local c_middle_wool = minetest.get_content_id('default:clay');
+	local slab_stone    = minetest.get_content_id('stairs:slab_stone');
+	if( pos.bsizex > 2 and pos.bsizez > 2 ) then
+		is_main_road = true;
+	end
+--]]
+
 	if( not(pos.y >= minp.y and pos.y <= maxp.y-2)) then
 		return;
 	end
@@ -809,6 +824,16 @@ handle_schematics.place_road = function(minp, maxp, data, param2_data, a, c_road
 			-- ...with air above
 			data[ a:index( x, pos.y+1, z)] = c_air;
 			data[ a:index( x, pos.y+2, z)] = c_air;
+
+--[[
+			if(    (param2==0 and (x==pos.x or x==pos.x+8) and is_main_road)
+			    or (param2==1 and (z==pos.z or z==pos.z+8) and is_main_road)) then
+				data[ a:index( x, pos.y+1, z )] = slab_stone; 
+			elseif((param2==0 and (x==pos.x+4 ) and is_main_road)
+			    or (param2==1 and (z==pos.z+4 ) and is_main_road)) then
+				data[ a:index( x, pos.y,   z )] = c_middle_wool;
+			end
+--]]
 		end
 	end
 end
