@@ -21,9 +21,7 @@ end
 
 
 save_restore.restore_data = function( filename )
-
 	local path = minetest.get_worldpath()..'/'..filename;
-
 	local file = io.open( path, 'r' );
 	if( file ) then
 		local data = file:read("*all");
@@ -41,7 +39,7 @@ save_restore.file_exists = function( filename )
 
 	local path = minetest.get_worldpath()..'/'..filename;
 
-	local file = io.open( path, 'r' );
+	local file = save_restore.file_access( path, 'r' );
 	if( file ) then
 		file:close();
 		return true;
@@ -56,9 +54,36 @@ save_restore.create_directory = function( filename )
 
 	if( not( save_restore.file_exists( filename ))) then
 		if( minetest.mkdir ) then
-			minetest.mkdir( minetest.get_worldpath().."/schems".. "\"");
+			minetest.mkdir( minetest.get_worldpath().."/schems");
 		else
 			os.execute("mkdir \""..minetest.get_worldpath().."/schems".. "\"");
 		end
+	end
+end
+
+
+-- we only need the function io.open in a version that can read schematic files from diffrent places,
+-- even if a secure environment is enforced; this does require an exception for the mod
+local ie_io_open = io.open;
+if( minetest.request_insecure_environment ) then
+	local ie, req_ie = _G, minetest.request_insecure_environment
+	if req_ie then ie = req_ie() end
+	if ie then
+		ie_io_open = ie.io.open;
+	end
+end
+
+-- only a certain type of files can be read and written
+save_restore.file_access = function( path, params )
+	if( (params=='r' or params=='rb')
+	  and ( string.find( path, '.mts',  -4 )
+	     or string.find( path, '.we',   -3 )
+	     or string.find( path, '.wem',  -4 ) )) then
+		return ie_io_open( path, params );
+	elseif( (params=='w' or params=='wb')
+	  and ( string.find( path, '.mts',  -4 )
+	     or string.find( path, '.we',   -3 )
+	     or string.find( path, '.wem',  -4 ) )) then
+		return ie_io_open( path, params );
 	end
 end

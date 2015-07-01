@@ -40,7 +40,7 @@ handle_schematics.analyze_mts_file = function( path )
 	local size = { x = 0, y = 0, z = 0, version = 0 }
 	local version = 0;
 
-	local file = io.open(path..'.mts', "rb")
+	local file, err = save_restore.file_access(path..'.mts', "rb")
 	if (file == nil) then
 		return nil
 	end
@@ -175,7 +175,7 @@ handle_schematics.store_mts_file = function( path, data )
 
 	data.nodenames[ #data.nodenames+1 ] = 'air';
 
-	local file = io.open(path..'.mts', "wb")
+	local file, err = save_restore.file_access(path..'.mts', "wb")
 	if (file == nil) then
 		return nil
 	end

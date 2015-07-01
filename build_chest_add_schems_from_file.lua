@@ -1,7 +1,7 @@
 
 
 build_chest.add_files_to_menu = function( path, add_path  )
-	local file,error = io.open( path, "rb")
+	local file,err = io.open( path, "rb")
         if (file == nil) then
                 return;
         end
