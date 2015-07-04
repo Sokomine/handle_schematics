@@ -145,6 +145,136 @@ build_chest.show_size_data = function( building_name )
 end
 
 
+-- helper function for update_formspec that handles saving of a building
+handle_schematics.update_formspec_save_building = function( formspec, meta, player, fields, pos )
+	local saved_as_filename = meta:get_string('saved_as_filename');
+	if( saved_as_filename and saved_as_filename ~= "" ) then
+		local p1str = meta:get_string('p1');
+		local p2str = meta:get_string('p2');
+		
+		return formspec..
+			"label[2.0,3;This area has been saved to the file]"..
+			"label[2.5,3.3;"..minetest.formspec_escape( saved_as_filename ).."]"..
+			"label[2.0,3.6;The area extends from]"..
+			"label[2.5,3.9;"..minetest.formspec_escape( p1str ).."]"..
+			"label[2.0,4.2;to the point]"..
+			"label[2.5,4.5;"..minetest.formspec_escape( p2str ).."]"..
+			"button[5,8.0;3,0.5;back;Back]";
+	end
+
+	local end_pos_mark = build_chest.end_pos_list[ player:get_player_name() ];
+	if(    end_pos_mark
+	   and end_pos_mark.x==pos.x 
+	   and end_pos_mark.y==pos.y 
+	   and end_pos_mark.z==pos.z ) then
+
+		return formspec..
+			"label[2,3.0;This chest marks the end position of your building. Please put another]"..
+			"label[2,3.3;build chest in front of your building and save it with that chest.]"..
+			"button[5,8.0;3,0.5;back;Back]";
+	end
+		
+	if( end_pos_mark and end_pos_mark.start_pos ) then
+
+		if(    end_pos_mark.start_pos.x == pos.x
+		   and end_pos_mark.start_pos.y == pos.y
+		   and end_pos_mark.start_pos.z == pos.z ) then
+			local p2 = {x=end_pos_mark.x, y=end_pos_mark.y, z=end_pos_mark.z};
+			local p1 = {x=end_pos_mark.start_pos.x, y=end_pos_mark.start_pos.y, z=end_pos_mark.start_pos.z};
+			local height = math.abs( p1.y - p2.y )+1;
+			local width  = 0;
+			local length = 0;
+			if( end_pos_mark.param2==0 or end_pos_mark.param2==2 ) then
+				-- adjust p1 and p2 so that only the area we really care about is marked
+				if( p1.z > p2.z ) then
+					p1.z = p1.z-1;
+					p2.z = p2.z+1;
+				else
+					p1.z = p1.z+1;
+					p2.z = p2.z-1;
+				end
+				width  = math.abs( p1.x - p2.x )+1;
+				length = math.abs( p1.z - p2.z )+1;
+			else
+				if( p1.x > p2.x ) then
+					p1.x = p1.x-1;
+					p2.x = p2.x+1;
+				else
+					p1.x = p1.x+1;
+					p2.x = p2.x-1;
+				end
+				length = math.abs( p1.x - p2.x )+1;
+				width  = math.abs( p1.z - p2.z )+1;
+			end
+			return formspec..
+				-- p1 and p2 are passed on as inputs in order to avoid any unwanted future interferences
+				-- with any other build chests
+				"field[40,40;0.1,0.1;save_as_p1;;"..minetest.pos_to_string(p1).."]"..
+				"field[40,40;0.1,0.1;save_as_p2;;"..minetest.pos_to_string(p2).."]"..
+
+				"label[2,2.4;How high is your building? This does *not* include the height offset below. The]"..
+				"label[2,2.7;default value is calculated from the height difference between start and end position.]"..
+				"label[2,3.15;Total height of your building:]"..
+					"field[6,3.5;1,0.5;save_as_height;;"..tostring(height).."]"..
+
+				-- note: in mg_villages, yoff has to be 0 in order to include the ground floor as well;
+				-- "1" means the building without floor; here, "1" means a floating building
+				"label[2,3.8;The hight offset sets how deep your building will be burried in the ground. Examples:]"..
+					"label[2.5,4.1;A value of -4 will include a cellar which extends 4 nodes below this build chest.]"..
+					"label[2.5,4.4;A value of -1 will include the floor below the chest, but no cellar.]"..
+					"label[2.5,4.7;A positive value will make your building float in the air.]"..
+				"label[2,5.15;Add height offset:]"..
+					"field[6,5.5;1,0.5;save_as_yoff;;0]"..
+
+				"label[2,5.8;Without the changes entered in the input form above, your building will extend from]"..
+					"label[2.5,6.1;"..minetest.formspec_escape(
+						minetest.pos_to_string( p1 ).." to "..
+						minetest.pos_to_string( p2 ).." and span a volume of "..
+						-- x and z are swpapped here if rotated by 90 or 270 degree
+						tostring(width )..' (width) x '..
+						tostring(length)..' (depth) x '..
+						tostring(height)..' (height)').."]"..
+						
+				"label[2,6.7;Please enter a descriptive filename. Allowed charcters: "..
+					minetest.formspec_escape("a-z, A-Z, 0-9, -, _, .").."]"..
+				"label[2,7.15;Save schematic as:]"..
+					"field[6,7.5;4,0.5;save_as_filename;;]"..
+
+				"button[2,8.0;3,0.5;abort_set_start_pos;Abort]"..
+				"button[6,8.0;3,0.5;save_as;Save building now]";
+		 else
+			return formspec..
+				"label[3,3;You have selected another build chest as start position.]"..
+				"button[5,8.0;3,0.5;back;Back]"..
+				"button[5,5.0;3,0.5;abort_set_start_pos;Reset start position]";
+		end
+	end
+
+	if( fields.error_msg ) then
+		return formspec..
+			"label[4,4.5;Error while trying to set the start position:]"..
+			"textarea[4,5;6,2;error_msg;;"..
+			minetest.formspec_escape( fields.error_msg ).."]"..
+			"button[5,8.0;3,0.5;back;Back]";
+	end
+
+	return formspec..
+		"label[2.5,2.2;First, let us assume that you are facing the front of this build chest.]"..
+
+		"label[2,3.1;Are you looking at the BACKSIDE of your building, and does said backside stretch]"..
+		"label[2,3.4;to the right and in front of you? Then click on the button below:]"..
+		"button[4,4;5,0.5;set_end_pos;Set this position as new end position]"..
+
+		"label[2,5.2;Have you set the end position with another build chest using the method above]"..
+		"label[2,5.5;in the meantime? And are you now looking at the FRONT of your building, which]"..
+		"label[2,5.8;streches in front of you and to the right? Then click on Proceed:]"..
+		"button[5,6.4;3,0.5;set_start_pos;Proceed with saving]"..
+
+		"label[4,7.4;If this confuses you, you can also abort the process.]"..
+		"button[5,8.0;3,0.5;back;Abort]";
+end
+
+
 
 build_chest.update_formspec = function( pos, page, player, fields )
 
@@ -194,131 +324,7 @@ build_chest.update_formspec = function( pos, page, player, fields )
 
 	-- offer a menu to set the positions for saving a building
 	if( #current_path > 0 and current_path[1]=='save a building' ) then
-		local saved_as_filename = meta:get_string('saved_as_filename');
-		if( saved_as_filename and saved_as_filename ~= "" ) then
-			local p1str = meta:get_string('p1');
-			local p2str = meta:get_string('p2');
-			
-			return formspec..
-				"label[2.0,3;This area has been saved to the file]"..
-				"label[2.5,3.3;"..minetest.formspec_escape( saved_as_filename ).."]"..
-				"label[2.0,3.6;The area extends from]"..
-				"label[2.5,3.9;"..minetest.formspec_escape( p1str ).."]"..
-				"label[2.0,4.2;to the point]"..
-				"label[2.5,4.5;"..minetest.formspec_escape( p2str ).."]"..
-				"button[5,8.0;3,0.5;back;Back]";
-		end
-
-		local end_pos_mark = build_chest.end_pos_list[ player:get_player_name() ];
-		if(    end_pos_mark
-		   and end_pos_mark.x==pos.x 
-		   and end_pos_mark.y==pos.y 
-		   and end_pos_mark.z==pos.z ) then
-
-			return formspec..
-				"label[2,3.0;This chest marks the end position of your building. Please put another]"..
-				"label[2,3.3;build chest in front of your building and save it with that chest.]"..
-				"button[5,8.0;3,0.5;back;Back]";
-		end
-		
-		if( end_pos_mark and end_pos_mark.start_pos ) then
-
-			if(    end_pos_mark.start_pos.x == pos.x
-			   and end_pos_mark.start_pos.y == pos.y
-			   and end_pos_mark.start_pos.z == pos.z ) then
-				local p2 = {x=end_pos_mark.x, y=end_pos_mark.y, z=end_pos_mark.z};
-				local p1 = {x=end_pos_mark.start_pos.x, y=end_pos_mark.start_pos.y, z=end_pos_mark.start_pos.z};
-				local height = math.abs( p1.y - p2.y )+1;
-				local width  = 0;
-				local length = 0;
-				if( end_pos_mark.param2==0 or end_pos_mark.param2==2 ) then
-					-- adjust p1 and p2 so that only the area we really care about is marked
-					if( p1.z > p2.z ) then
-						p1.z = p1.z-1;
-						p2.z = p2.z+1;
-					else
-						p1.z = p1.z+1;
-						p2.z = p2.z-1;
-					end
-					width  = math.abs( p1.x - p2.x )+1;
-					length = math.abs( p1.z - p2.z )+1;
-				else
-					if( p1.x > p2.x ) then
-						p1.x = p1.x-1;
-						p2.x = p2.x+1;
-					else
-						p1.x = p1.x+1;
-						p2.x = p2.x-1;
-					end
-					length = math.abs( p1.x - p2.x )+1;
-					width  = math.abs( p1.z - p2.z )+1;
-				end
-				return formspec..
-					-- p1 and p2 are passed on as inputs in order to avoid any unwanted future interferences
-					-- with any other build chests
-					"field[40,40;0.1,0.1;save_as_p1;;"..minetest.pos_to_string(p1).."]"..
-					"field[40,40;0.1,0.1;save_as_p2;;"..minetest.pos_to_string(p2).."]"..
-
-					"label[2,2.4;How high is your building? This does *not* include the height offset below. The]"..
-					"label[2,2.7;default value is calculated from the height difference between start and end position.]"..
-					"label[2,3.15;Total height of your building:]"..
-						"field[6,3.5;1,0.5;save_as_height;;"..tostring(height).."]"..
-
-					-- note: in mg_villages, yoff has to be 0 in order to include the ground floor as well;
-					-- "1" means the building without floor; here, "1" means a floating building
-					"label[2,3.8;The hight offset sets how deep your building will be burried in the ground. Examples:]"..
-						"label[2.5,4.1;A value of -4 will include a cellar which extends 4 nodes below this build chest.]"..
-						"label[2.5,4.4;A value of -1 will include the floor below the chest, but no cellar.]"..
-						"label[2.5,4.7;A positive value will make your building float in the air.]"..
-					"label[2,5.15;Add height offset:]"..
-						"field[6,5.5;1,0.5;save_as_yoff;;0]"..
-
-					"label[2,5.8;Without the changes entered in the input form above, your building will extend from]"..
-						"label[2.5,6.1;"..minetest.formspec_escape(
-							minetest.pos_to_string( p1 ).." to "..
-							minetest.pos_to_string( p2 ).." and span a volume of "..
-							-- x and z are swpapped here if rotated by 90 or 270 degree
-							tostring(width )..' (width) x '..
-							tostring(length)..' (depth) x '..
-							tostring(height)..' (height)').."]"..
-						
-					"label[2,6.7;Please enter a descriptive filename. Allowed charcters: "..
-						minetest.formspec_escape("a-z, A-Z, 0-9, -, _, .").."]"..
-					"label[2,7.15;Save schematic as:]"..
-						"field[6,7.5;4,0.5;save_as_filename;;]"..
-
-					"button[2,8.0;3,0.5;abort_set_start_pos;Abort]"..
-					"button[6,8.0;3,0.5;save_as;Save building now]";
-			 else
-				return formspec..
-					"label[3,3;You have selected another build chest as start position.]"..
-					"button[5,8.0;3,0.5;back;Back]"..
-					"button[5,5.0;3,0.5;abort_set_start_pos;Reset start position]";
-			end
-		end
-
-		if( fields.error_msg ) then
-			return formspec..
-				"label[4,4.5;Error while trying to set the start position:]"..
-				"textarea[4,5;6,2;error_msg;;"..
-				minetest.formspec_escape( fields.error_msg ).."]"..
-				"button[5,8.0;3,0.5;back;Back]";
-		end
-
-		return formspec..
-			"label[2.5,2.2;First, let us assume that you are facing the front of this build chest.]"..
-
-			"label[2,3.1;Are you looking at the BACKSIDE of your building, and does said backside stretch]"..
-			"label[2,3.4;to the right and in front of you? Then click on the button below:]"..
-			"button[4,4;5,0.5;set_end_pos;Set this position as new end position]"..
-
-			"label[2,5.2;Have you set the end position with another build chest using the method above]"..
-			"label[2,5.5;in the meantime? And are you now looking at the FRONT of your building, which]"..
-			"label[2,5.8;streches in front of you and to the right? Then click on Proceed:]"..
-			"button[5,6.4;3,0.5;set_start_pos;Proceed with saving]"..
-
-			"label[4,7.4;If this confuses you, you can also abort the process.]"..
-			"button[5,8.0;3,0.5;back;Abort]";
+		return handle_schematics.update_formspec_save_building( formspec, meta, player, fields, pos);
 	end
 
 
