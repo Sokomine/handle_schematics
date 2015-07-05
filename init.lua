@@ -45,6 +45,8 @@ dofile(handle_schematics.modpath.."/build_chest_handle_replacements.lua");
 dofile(handle_schematics.modpath.."/build_chest_preview_image.lua");
 -- reads a file and adds the files listed there as menu entries
 dofile(handle_schematics.modpath.."/build_chest_add_schems_from_file.lua");
+-- locate schematics through directories
+dofile(handle_schematics.modpath.."/build_chest_add_schems_by_directory.lua");
 
 -- chooses traders and spawn positions for buildings
 dofile(handle_schematics.modpath.."/village_traders.lua")
