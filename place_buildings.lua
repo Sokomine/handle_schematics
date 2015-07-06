@@ -784,7 +784,15 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 			end
 		end
 	end
-	-- TODO: handle metadata (if any is provided)
+
+	if( binfo.metadata ) then
+		-- if it is a .we/.wem file, metadata was included directly
+		handle_schematics.restore_meta( nil, binfo.metadata, start_pos, end_pos, start_pos.brotate, mirror);
+	else
+		-- .mts files come with extra .meta file (if such a .meta file was created)
+		-- TODO: restore metadata for .mts files
+		--handle_schematics.restore_meta( filename, nil, binfo.metadata, start_pos, end_pos, start_pos.brotate, mirror);
+	end
 end
 
 

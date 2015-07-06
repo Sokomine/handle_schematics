@@ -160,7 +160,7 @@ handle_schematics.analyze_mts_file = function( path )
 		id = id+1;
 
 		if( id ~= is_air ) then
-			scm[y][x][z] = {id, p2}; -- TODO: handle possible meta values contained in another file
+			scm[y][x][z] = {id, p2};
 		end
 	end
 	end

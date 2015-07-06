@@ -67,6 +67,7 @@ build_chest.read_building = function( building_name )
 	build_chest.building[ building_name ].nodenames      = res.nodenames;	
 	build_chest.building[ building_name ].rotated        = res.rotated;	
 	build_chest.building[ building_name ].burried        = res.burried;	
+	build_chest.building[ building_name ].metadata       = res.metadata;
 	-- scm_data_cache is not stored as that would take up too much storage space
 	--build_chest.building[ building_name ].scm_data_cache = res.scm_data_cache;	
 
@@ -609,7 +610,8 @@ mirror = nil;
 			if( save_restore.file_exists( 'schems/'..backup_file..'.mts' )) then
 				filename = minetest.get_worldpath()..'/schems/'..backup_file..'.mts';
 				minetest.place_schematic( start_pos, filename, "0", {}, true );
-				handle_schematics.restore_meta( backup_file );
+				-- no rotation needed - the metadata can be applied as-is (with the offset applied)
+				handle_schematics.restore_meta( backup_file, nil, start_pos, end_pos, 0, nil);
 				meta:set_string('backup', nil );
 			end
 		end

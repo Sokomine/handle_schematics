@@ -97,7 +97,7 @@ handle_schematics.save_meta = function( start_pos, end_pos, filename )
 		for x=p.x, p.x+p.sizex do
 			for y=p.y, p.y+p.sizey do
 				for z=p.z, p.z+p.sizez do
-					handle_schematics_get_meta_table( {x=x, y=y, z=z}, all_meta, p );
+					handle_schematics_get_meta_table( {x=x-p.x, y=y-p.y, z=z-p.z}, all_meta, p );
 				end
 			end
 		end
@@ -123,12 +123,25 @@ end
 
 
 -- restore metadata from file
--- TODO: use relative instead of absolute positions
-handle_schematics.restore_meta = function( filename )
+-- TODO: use relative instead of absolute positions (already done for .we files)
+-- TODO: handle mirror
+handle_schematics.restore_meta = function( filename, all_meta, start_pos, end_pos, rotate, mirror )
 
-	local all_meta = save_restore.restore_data( 'schems/'..filename..'.meta' );	
+	if( not( all_meta ) and filename ) then
+		all_meta = save_restore.restore_data( 'schems/'..filename..'.meta' );	
+	end
 	for _,pos in ipairs( all_meta ) do
-		local meta = minetest.get_meta( {x=pos.x, y=pos.y, z=pos.z} );
+		local p = {};
+		if(     rotate == 0 ) then
+			p = {x=start_pos.x+pos.x-1, y=start_pos.y+pos.y-1, z=start_pos.z+pos.z-1};
+		elseif( rotate == 1 ) then
+			p = {x=start_pos.x+pos.z-1, y=start_pos.y+pos.y-1, z=end_pos.z  -pos.x+1};
+		elseif( rotate == 2 ) then
+			p = {x=end_pos.x  -pos.x+1, y=start_pos.y+pos.y-1, z=end_pos.z  -pos.z+1};
+		elseif( rotate == 3 ) then
+			p = {x=end_pos.x  -pos.z+1, y=start_pos.y+pos.y-1, z=start_pos.z+pos.x-1};
+		end
+		local meta = minetest.get_meta( p );
 		meta:from_table( {inventory = pos.inventory, fields = pos.fields });
 	end
 end

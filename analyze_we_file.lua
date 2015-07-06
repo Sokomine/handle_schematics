@@ -32,6 +32,7 @@ handle_schematics.analyze_we_file = function(scm, we_origin)
 
 	scm = {}
 	local maxx, maxy, maxz = -1, -1, -1
+	local all_meta = {};
 	for i = 1, #nodes do
 		local ent = nodes[i]
 		ent.x = ent.x + 1
@@ -55,11 +56,27 @@ handle_schematics.analyze_we_file = function(scm, we_origin)
 		if ent.param2 == nil then
 			ent.param2 = 0
 		end
-		if ent.meta == nil then
-			ent.meta = {fields={}, inventory={}}
+		-- metadata is only of intrest if it is not empty
+		if( ent.meta and (ent.meta.fields or ent.meta.inventory)) then
+			local has_meta = false;
+			for _,v in pairs( ent.meta.fields ) do
+				has_meta = true;
+			end
+			for _,v in pairs(ent.meta.inventory) do
+				has_meta = true;
+			end
+			if( has_meta == true ) then
+				all_meta[ #all_meta+1 ] = {
+					x=ent.x,
+					y=ent.y,
+					z=ent.z,
+					fields    = ent.meta.fields,
+					inventory = ent.meta.inventory};
+			end
 		end
 
-		scm[ent.y][ent.x][ent.z] = { nodenames_id[ ent.name ], ent.param2 }; --TODO ent.meta
+
+		scm[ent.y][ent.x][ent.z] = { nodenames_id[ ent.name ], ent.param2 };
 
 	end
 
@@ -79,5 +96,5 @@ handle_schematics.analyze_we_file = function(scm, we_origin)
 	size.x = math.max(maxx,0);
 	size.z = math.max(maxz,0);
 
-	return { size = { x=size.x, y=size.y, z=size.z}, nodenames = nodenames, on_constr = {}, after_place_node = {}, rotated=0, burried=0, scm_data_cache = scm };
+	return { size = { x=size.x, y=size.y, z=size.z}, nodenames = nodenames, on_constr = {}, after_place_node = {}, rotated=0, burried=0, scm_data_cache = scm, metadata = all_meta };
 end
