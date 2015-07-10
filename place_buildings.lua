@@ -258,7 +258,7 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 end
 
 
-local function generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node)
+local function generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node, keep_ground)
 
 	local binfo = binfo_extra;
 	if( not( binfo ) and mg_villages) then
@@ -454,7 +454,7 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 					end
 
 					-- replace all dirt and dirt with grass at that x,z coordinate with the stored ground grass node;
-					if( n.is_grass ) then
+					if( n.is_grass and keep_ground) then
 						new_content = ground_type;
 					end
 
@@ -604,7 +604,7 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 			if( pos.road_material ) then
 				road_material = pos.road_material;
 			end
-			generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, road_material )
+			generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, road_material, true )
 		end
 	end
 
@@ -701,7 +701,8 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	local extranodes = {}
 	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {} };
 
-	generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel);
+	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
+	generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, false);
 
 	-- store the changed map data
 	vm:set_data(data);
