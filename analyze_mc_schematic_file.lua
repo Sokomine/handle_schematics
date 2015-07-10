@@ -177,8 +177,8 @@ print('FILE SIZE: '..tostring( string.len( data_string ))); -- TODO
 			for z =1,size.z do
 				local new_node = handle_schematics.findMC2MTConversion(
 						-- (Y×length + Z)×width + X.
-						mc_schematic_data.Blocks[ ((y-1)*size.z + (z-1) )*size.x + (x-1) +1],
-						mc_schematic_data.Data[   ((y-1)*size.z + (z-1) )*size.x + (x-1) +1] );
+						mc_schematic_data.Blocks[ ((y-1)*size.z + (z-1) )*size.x + (size.x-x) +1],
+						mc_schematic_data.Data[   ((y-1)*size.z + (z-1) )*size.x + (size.x-x) +1] );
 				if( not( nodenames_id[ new_node[1]] )) then
 					nodenames_id[ new_node[1] ] = #nodenames + 1;
 					nodenames[ nodenames_id[ new_node[1] ]] = new_node[1];
