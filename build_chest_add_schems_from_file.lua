@@ -34,6 +34,9 @@ build_chest.add_files_to_menu = function( path, add_path  )
 			elseif( string.sub( name, -3 )=='.we' ) then
 				name            = string.sub( name,            1, length1-3 );
 				schem_file_name = string.sub( schem_file_name, 1, length2-3 );
+			elseif( string.sub( name, -10 )==".schematic" ) then
+				name            = string.sub( name,            1, length1-10);
+				schem_file_name = string.sub( schem_file_name, 1, length2-10);
 			end
 			help[#help] = name;
 				

@@ -10,7 +10,7 @@ handle_schematics.analyze_we_file = function(scm, we_origin)
 	if not f then
 		f, err = save_restore.file_access( scm..".wem", "r")
 		if not f then
-			error("Could not open schematic '" .. scm .. ".we': " .. err)
+--			error("Could not open schematic '" .. scm .. ".we': " .. err)
 			return nil;
 		end
 	end

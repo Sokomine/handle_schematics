@@ -12,6 +12,9 @@ dofile(handle_schematics.modpath.."/worldedit_file.lua")
 dofile(handle_schematics.modpath.."/analyze_mts_file.lua") 
 -- reads and analyzes worldedit files
 dofile(handle_schematics.modpath.."/analyze_we_file.lua")
+-- reads and analyzes Minecraft schematic files
+dofile(handle_schematics.modpath.."/translate_nodenames_for_mc_schematic.lua")
+dofile(handle_schematics.modpath.."/analyze_mc_schematic_file.lua")
 -- handles rotation and mirroring
 dofile(handle_schematics.modpath.."/rotate.lua")
 -- count nodes, take param2 into account for rotation etc.
