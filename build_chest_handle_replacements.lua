@@ -142,6 +142,8 @@ build_chest.replacements_get_list_formspec = function( pos, selected_row )
 	-- add the proceed-button as soon as all unkown materials have been replaced
 	if( may_proceed ) then
 		formspec = formspec.."button[9.9,9.0;2.0,0.5;proceed_with_scaffolding;Proceed]";
+	else
+		formspec = formspec.."button[9.9,9.0;3.2,0.5;replace_rest_with_air;Suggest air for unknown]";
 	end
 	formspec = formspec.."button[9.9,1.0;2.0,0.5;preview;Preview]";
 	if( extra_buttons.text and extra_buttons.text ~= "" ) then
@@ -161,6 +163,41 @@ build_chest.replacements_get_list_formspec = function( pos, selected_row )
 	end
 	return formspec;
 end
+
+
+-- set replacements for all unknown nodes to air so that the building can be spawned
+build_chest.replacements_replace_rest_with_air = function( pos, meta )
+	local building_name = meta:get_string( 'building_name' );
+	if( not( building_name ) or not( build_chest.building[ building_name ])) then
+		return;
+	end
+	local replacements_orig  = minetest.deserialize( meta:get_string( 'replacements' ));
+	for i,v in ipairs( build_chest.building[ building_name ].statistic ) do
+		local name = build_chest.building[ building_name ].nodenames[ v[1]];	
+		-- nodes that are to be ignored do not need to be replaced
+		if( name ~= 'air' and name ~= 'ignore' and name ~= 'mg:ignore' and v[2] and v[2]>0) then
+			-- find out if this node name gets replaced
+			local repl = name;
+			for j,r in ipairs( replacements_orig ) do
+				if( r and r[1]==name ) then
+					repl = r[2];
+					-- set replacements for inexisting nodes to air
+					if( not( minetest.registered_nodes[ repl ] )) then
+						r[2] = 'air';
+					end
+				end
+			end
+
+			-- replace nodes that do not exist with air
+			if( not( repl ) or not( minetest.registered_nodes[ repl ])) then
+				table.insert( replacements_orig, { name, 'air' });
+			end
+		end
+	end
+	-- store the new set of replacements
+	meta:set_string( 'replacements', minetest.serialize( replacements_orig ));
+end
+
 
 
 build_chest.replacements_apply = function( pos, meta, old_material, new_material )

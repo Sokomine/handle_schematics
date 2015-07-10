@@ -291,6 +291,10 @@ build_chest.update_formspec = function( pos, page, player, fields )
 					      + (village_pos.y - pos.y ) * (village_pos.x - pos.y )
 					      + (village_pos.z - pos.z ) * (village_pos.x - pos.z ) ));
 
+	-- the statistic is needed for all the replacements later on as it also contains the list of nodenames
+	if( building_name and building_name~=""and not( build_chest.building[ building_name ].size )) then
+		build_chest.read_building( building_name );
+	end
 
 	if( page == 'please_remove' ) then
 		if( build_chest.stages_formspec_page_please_remove ) then
@@ -496,6 +500,12 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
 		return;
 	end
 
+	local building_name = meta:get_string('building_name' );
+	-- the statistic is needed for all the replacements later on as it also contains the list of nodenames
+	if( building_name and building_name~=""and not( build_chest.building[ building_name ].size )) then
+		build_chest.read_building( building_name );
+	end
+
 -- general menu handling
 	-- back button selected
 	if( fields.back ) then
@@ -552,6 +562,8 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
    
 		build_chest.replacements_apply( pos, meta, fields.replace_row_material, fields.replace_row_with );
 
+	elseif( fields.replace_rest_with_air ) then
+		build_chest.replacements_replace_rest_with_air( pos, meta );
 
 	elseif( fields.wood_selection ) then
 		build_chest.replacements_apply_for_group( pos, meta, 'wood',    fields.wood_selection,    fields.set_wood );
