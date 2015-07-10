@@ -189,10 +189,13 @@ print('FILE SIZE: '..tostring( string.len( data_string ))); -- TODO
 					new_node[2]=0;
 					max_msg=max_msg-1;
 				end
-				scm[y][x][z] = { nodenames_id[ new_node[1]], new_node[2]};
+				-- save some space by not saving air
+				if( new_node[1] ~= 'air' ) then
+					scm[y][x][z] = { nodenames_id[ new_node[1]], new_node[2]};
+				end
 			end
 		end
 	end
-	return { size = { x=size.x, y=size.y, z=size.z}, nodenames = nodenames, on_constr = {}, after_place_node = {}, rotated=0, burried=0, scm_data_cache = scm, metadata = {}};
+	return { size = { x=size.x, y=size.y, z=size.z}, nodenames = nodenames, on_constr = {}, after_place_node = {}, rotated=90, burried=0, scm_data_cache = scm, metadata = {}};
 end
 

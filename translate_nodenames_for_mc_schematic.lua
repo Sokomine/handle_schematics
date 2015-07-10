@@ -351,8 +351,8 @@ local mc2mtFacedir = function(blockdata)
 --	# z- = 2
 	local tbl = {
 		[3]= 2,
-		[1]= 3,
-		[0]= 1,
+		[1]= 1,
+		[0]= 3,
 		[2]= 0,
 	}
 	if( tbl[ blockdata ] ) then
