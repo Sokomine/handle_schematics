@@ -319,21 +319,6 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 		mg_villages.get_fruit_replacements( replacements, pos.fruit);
 	end
 
-	local traders = {};
-	if( handle_schematics.choose_traders ) then
-		local village_type  = "";
-		if( village_id and mg_villages and mg_villages.all_villages and mg_villages.all_villages[ village_id ] ) then
-			village_type = mg_villages.all_villages[ village_id ].village_type;
-		end
-		local building_type = "";
-		if( binfo.typ ) then
-			building_type = binfo.typ;
-		end
-		if( not( pos.traders )) then
-			traders = handle_schematics.choose_traders( village_type, building_type, replacements )
-		end
-	end
-
 	local c_ignore = minetest.get_content_id("ignore")
 	local c_air = minetest.get_content_id("air")
 	local c_snow                 = minetest.get_content_id( "default:snow");
@@ -553,13 +538,6 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 		end
 	end
 	end
-
-	-- determine suitable positions for the traders
-	if( handle_schematics.choose_trader_pos and #traders>0) then
-		extra_calls.traders = handle_schematics.choose_trader_pos(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node, traders);
-		print('TRADERS CHOOSEN FOR '..tostring( binfo.scm )..': '..minetest.serialize( extra_calls.traders ));
-	end
-
 end
 
 
