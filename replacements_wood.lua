@@ -147,7 +147,7 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 				v.."_wood_v",
 				goods,
 				{ "lumberjack" },
-				""
+				{ 'holzfaeller.png' }
 				);
 
 	                replacements_group['wood'].traders[ wood_name ] = v..'_wood_v';

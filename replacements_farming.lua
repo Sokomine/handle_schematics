@@ -115,7 +115,7 @@ replacements_group['farming'].add_material = function( fruit, fruit_item, prefix
 			fruit.."_farmer_v",
 			goods,
 			{ "farmer" },
-			""
+			{'kuhhaendler.png', 'bauer_in_sonntagskleidung.png', 'baeuerin.png', 'wheat_farmer_by_addi.png', 'tomatenhaendler.png'}
 			);
 
 		replacements_group['farming'].traders[ fruit_item ] = fruit..'_farmer_v';
