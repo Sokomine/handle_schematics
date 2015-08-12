@@ -109,7 +109,10 @@ local function generate_building_plotmarker( pos, minp, maxp, data, param2_data,
 	end
 	-- actually position the marker
 	if(   p.x >= minp.x and p.x <= maxp.x and p.z >= minp.z and p.z <= maxp.z and p.y >= minp.y and p.y <= maxp.y) then
-		if( data[ a:index(p.x, p.y, p.z)] == cid.c_snow and p.y<maxp.y and moresnow and moresnow.c_snow_top and cid.c_snow_top ~= cid.c_ignore) then
+		if( handle_schematics.moresnow_installed
+		   and data[ a:index(p.x, p.y, p.z)] == cid.c_snow
+		   and p.y<maxp.y
+		   and moresnow and moresnow.c_snow_top and cid.c_snow_top ~= cid.c_ignore) then
 			data[ a:index(p.x, p.y+1, p.z)] = moresnow.c_snow_top;
 		end
 		data[       a:index(p.x, p.y, p.z)] = cid.c_plotmarker;
@@ -427,7 +430,8 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 				end
 
 				if( not( t )) then
-					if( node_content ~= cid.c_plotmarker and (not(moresnow) or node_content ~= moresnow.c_snow_top )) then
+					if( node_content ~= cid.c_plotmarker
+					   and (not(handle_schematics.moresnow_installed) or not(moresnow) or node_content ~= moresnow.c_snow_top )) then
 						data[ a:index(ax, ay, az)] = cid.c_air;
 					end
 				else

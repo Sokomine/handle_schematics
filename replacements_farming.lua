@@ -98,7 +98,7 @@ replacements_group['farming'].add_material = function( fruit, fruit_item, prefix
 	end
 
 
-	if( is_loaded and mobf_trader and mobf_trader.add_trader ) then
+	if( is_loaded and minetest.get_modpath('mobf_trader') and mobf_trader and mobf_trader.add_trader ) then
 
 		-- TODO: use replacements for the payments where needed
 		local goods = {

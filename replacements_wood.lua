@@ -127,7 +127,7 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 			end
 		end
 
-		if( is_loaded and mobf_trader and mobf_trader.add_trader ) then
+		if( is_loaded and minetest.get_modpath('mobf_trader') and mobf_trader and mobf_trader.add_trader ) then
 			-- TODO: check if all offered payments exist
 			local goods = {
 				{ data[3].." 4",    "default:dirt 24",       "default:cobble 24"},
