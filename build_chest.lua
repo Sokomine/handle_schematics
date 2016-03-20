@@ -408,6 +408,8 @@ build_chest.update_formspec = function( pos, page, player, fields )
 			-- do replacements for realtest where necessary (this needs to be done only once)
 			local replacements = {};
 			replacements_group['realtest'].replace( replacements );
+			-- do replacements for nodes that no longer exist
+			replacements_group['discontinued_nodes'].replace( replacements );
 			meta:set_string( 'replacements', minetest.serialize( replacements ));
 
 			return formspec..build_chest.replacements_get_list_formspec( pos );

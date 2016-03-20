@@ -219,6 +219,15 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			elseif( new_content == cid.c_sign ) then
 				-- the sign may require some text to be written on it
 				new_nodes[ i ].is_sign      = 1;
+
+			-- doors need special treatment as they changed from 2 to 1 node
+			elseif( string.sub( node_name,     1, 6)=="doors:"
+			    and string.sub( new_node_name, 1, 6)=="doors:" ) then
+				if(     string.sub( new_node_name, -2 ) =="_a") then
+					new_nodes[ i ].is_door_a    = 1;
+				elseif( string.sub( new_node_name, -2 ) =="_b") then
+					new_nodes[ i ].is_door_b    = 1;
+				end
 			end
 
 
@@ -460,19 +469,6 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 						data[       a:index(ax, ay, az)] = new_content;
 					end
 
-					-- store that a tree is to be grown there
-					if(     n.is_tree ) then
-						table.insert( extra_calls.trees,  {x=ax, y=ay, z=az, typ=new_content, snow=has_snow});
-
-					-- we're dealing with a chest that might need filling
-					elseif( n.is_chestlike ) then
-						table.insert( extra_calls.chests, {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos, typ_name=n.special_chest});
-
-					-- the sign may require some text to be written on it
-					elseif( n.is_sign ) then
-						table.insert( extra_calls.signs,  {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos});
-					end
-
 					-- handle rotation
 					if(     n.paramtype2 ) then
 						local param2 = t[2];
@@ -516,6 +512,26 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 						param2_data[a:index(ax, ay, az)] = np2;
 					else
 						param2_data[a:index(ax, ay, az)] = t[2];
+					end
+
+
+					-- store that a tree is to be grown there
+					if(     n.is_tree ) then
+						table.insert( extra_calls.trees,  {x=ax, y=ay, z=az, typ=new_content, snow=has_snow});
+
+					-- we're dealing with a chest that might need filling
+					elseif( n.is_chestlike ) then
+						table.insert( extra_calls.chests, {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos, typ_name=n.special_chest});
+
+					-- the sign may require some text to be written on it
+					elseif( n.is_sign ) then
+						table.insert( extra_calls.signs,  {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos});
+
+					-- doors need the state param to be set (which depends on param2)
+					elseif( n.is_door_a ) then
+						table.insert( extra_calls.door_a, {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
+					elseif( n.is_door_b ) then
+						table.insert( extra_calls.door_b, {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
 					end
 				end
 			end
@@ -576,7 +592,7 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 --print('REPLACEMENTS: '..minetest.serialize( replacements.table )..' CHEST: '..tostring( minetest.get_name_from_content_id( cid.c_chest ))); -- TODO
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {} };
 
 	for i, pos in ipairs(bpos) do
 		-- roads are only placed if there are at least mg_villages.MINIMAL_BUILDUNGS_FOR_ROAD_PLACEMENT buildings in the village
@@ -681,7 +697,7 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:gravel',         replacements );
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {} };
 
 	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
 	generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, false);
@@ -767,6 +783,24 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 			end
 		end
 	end
+
+	for k, v in pairs( res.extra_calls.door_b ) do
+		local meta = minetest.get_meta( v );
+
+		local l = 2 -- b
+		local h = meta:get_int("right") + 1
+
+		local replace = {
+			{ { type = "a", state = 0 }, { type = "a", state = 3 } },
+			{ { type = "b", state = 1 }, { type = "b", state = 2 } }
+		}
+		local new = replace[l][h]
+--		minetest.swap_node(v, {name = name .. "_" .. new.type, param2 = v.p2})
+		meta:set_int("state", new.state)
+		-- wipe meta on top node as it's unused
+		minetest.set_node({x = v.x, y = v.y + 1, z = v.z}, { name = "doors:hidden" })
+	end
+
 
 	if( binfo.metadata ) then
 		-- if it is a .we/.wem file, metadata was included directly
