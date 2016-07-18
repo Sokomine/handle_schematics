@@ -6,6 +6,7 @@ build_chest.replacements_get_current = function( meta, village_id )
 
 	-- villages have their own replacement list for the entire village
 	if( village_id~=""
+            and mg_villages
 	    and mg_villages.all_villages
             and mg_villages.all_villages[ village_id ]
             and mg_villages.all_villages[ village_id ].to_add_data
@@ -24,6 +25,7 @@ build_chest.replacements_set_current = function( meta, village_id, replacements 
 
 	-- villages have their own replacement list for the entire village
 	if( village_id~=""
+            and mg_villages
 	    and mg_villages.all_villages
             and mg_villages.all_villages[ village_id ]
             and mg_villages.all_villages[ village_id ].to_add_data
