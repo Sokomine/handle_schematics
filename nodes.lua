@@ -8,7 +8,7 @@
 minetest.register_node("handle_schematics:support", {
         description = "support structure for buildings",
         tiles = {"handle_schematics_support.png"},
-	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
+	groups = {snappy=3,choppy=3,oddly_breakable_by_hand=3},
         walkable = false,
         climbable = true,
         paramtype = "light",
