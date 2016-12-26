@@ -228,12 +228,12 @@ build_chest.preview_image_create_views = function( res, orients )
 			build_chest.preview_image_create_one_view( res, 3 )};
 
 	-- the building might be stored in rotated form
-	if( orients and #orients and orients[1] ) then
-		if(     orients[1]==1 ) then
+	if( res and res.rotated) then
+		if(     res.rotated and res.rotated==90) then
 			preview = {preview[2],preview[3],preview[4],preview[1]};
-		elseif( orients[1]==2 ) then
+		elseif( res.rotated and res.rotated==180) then
 			preview = {preview[3],preview[4],preview[1],preview[2]};
-		elseif( orients[1]==3 ) then
+		elseif( res.rotated and res.rotated==270) then
 			preview = {preview[4],preview[1],preview[2],preview[3]};
 		end
 	end
