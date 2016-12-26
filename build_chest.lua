@@ -430,6 +430,7 @@ build_chest.update_formspec = function( pos, page, player, fields )
 	end
 
 	if( fields.preview and building_name ) then
+		meta:set_string('preview',fields.preview); -- just so that we know what to do when the back-button is hit
 		return formspec..build_chest.preview_image_formspec( building_name,
 					build_chest.replacements_get_current( meta, village_id ), fields.preview);
 	end
@@ -578,14 +579,19 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
 	-- back button selected
 	if( fields.back ) then
 
-		local current_path = minetest.deserialize( meta:get_string( 'current_path' ) or 'return {}' );
+		local preview = meta:get_string('preview');
+		if( preview and preview ~= "" ) then
+			meta:set_string('preview',"");
+		else
+			local current_path = minetest.deserialize( meta:get_string( 'current_path' ) or 'return {}' );
 
-		table.remove( current_path ); -- revert latest selection
-		meta:set_string( 'current_path', minetest.serialize( current_path ));
-		meta:set_string( 'building_name', '');
-		meta:set_int(    'replace_row', 0 );
-		meta:set_int(    'page_nr',     0 );
-		meta:set_string( 'saved_as_filename', nil);
+			table.remove( current_path ); -- revert latest selection
+			meta:set_string( 'current_path', minetest.serialize( current_path ));
+			meta:set_string( 'building_name', '');
+			meta:set_int(    'replace_row', 0 );
+			meta:set_int(    'page_nr',     0 );
+			meta:set_string( 'saved_as_filename', nil);
+		end
 
 	-- menu entry selected
 	elseif( fields.selection ) then
