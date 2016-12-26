@@ -439,7 +439,7 @@ build_chest.update_formspec = function( pos, page, player, fields )
 	local start_pos     = meta:get_string('start_pos');
 	if( building_name and building_name ~= '' and start_pos and start_pos ~= '' and meta:get_string('replacements')) then
 		-- allow changes to the replacement list
-		return formspec..build_chest.replacements_get_list_formspec( pos, nil, 1, meta, village_id, building_name, -1 );
+		return formspec..build_chest.replacements_get_list_formspec( pos, nil, 1, meta, village_id, building_name, meta:get_int('replace_row') );
 	end
 
 	-- find out where we currently are in the menu tree
@@ -478,7 +478,7 @@ build_chest.update_formspec = function( pos, page, player, fields )
 			meta:set_string( 'replacements', minetest.serialize( replacements ));
 
 			-- allow changes to be made
-			return formspec..build_chest.replacements_get_list_formspec( pos, nil, 1, meta, village_id, building_name, -1 );
+			return formspec..build_chest.replacements_get_list_formspec( pos, nil, 1, meta, village_id, building_name, meta:get_int('replace_row') );
 		elseif( type(start_pos)=='string' ) then
 			return formspec.."label[3,3;Error reading building data:]"..
 					 "label[3.5,3.5;"..start_pos.."]";
@@ -570,7 +570,7 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
 
 	local building_name = meta:get_string('building_name' );
 	-- the statistic is needed for all the replacements later on as it also contains the list of nodenames
-	if( building_name and building_name~=""and not( build_chest.building[ building_name ].size )) then
+	if( building_name and building_name~="" and not( build_chest.building[ building_name ].size )) then
 		build_chest.read_building( building_name );
 	end
 

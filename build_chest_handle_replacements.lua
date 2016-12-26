@@ -74,6 +74,9 @@ build_chest.replacements_get_list_formspec = function( pos, selected_row, allow_
 	if( not( pos )) then
 		return "";
 	end
+	if( not( replace_row ) or replace_row<1) then
+		replace_row = -1;
+	end
 	local replacements  = build_chest.replacements_get_current( meta, village_id );
 	if( replace_row == -1 and meta and (not( building_name ) or building_name =="" )) then
 		building_name = meta:get_string( 'building_name' );
