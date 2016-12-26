@@ -59,7 +59,7 @@ build_chest.preview_image_create_one_view = function( data, side )
 			local z = params[4];
 			local target_x = x;
 			if( params[8]==1 ) then
-				target_x = math.max( params[1],params[2] )- x;
+				target_x = math.max( params[1],params[2] )- x+1;
 			end
 			while( not( found ) and z~= params[5]) do
 				local node = -1;
