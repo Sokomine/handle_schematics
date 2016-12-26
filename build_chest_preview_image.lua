@@ -10,7 +10,7 @@ build_chest.preview_image_draw_tile = function( content_id, image, x, z, dx, dz,
 			return '';
 		end
 		local tiles = node_def.tiles;
-		if( not( tiles )) then
+		if( not( tiles ) and node_def.tile_images) then
 			tiles = node_def.tile_images;
 		end
 		local tile = nil;
@@ -175,7 +175,7 @@ build_chest.preview_image_formspec = function( building_name, replacements, side
 
 	local scale = 0.5;
 
-	local tile_nr = 3; -- view from the side
+	local tile_nr = 6; -- view that works best with roofs and the like
 	if( side ~= 5 ) then
 		local scale_y = 6.0/data.size.y;
 		local scale_z = 10.0/data.size.z;
