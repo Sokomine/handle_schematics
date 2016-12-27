@@ -693,11 +693,11 @@ mirror = nil;
 		local end_pos       = minetest.deserialize( meta:get_string('end_pos'));
 		local backup_file   = meta:get_string( 'backup' );
 		if( start_pos and end_pos and start_pos.x and end_pos.x and backup_file and backup_file ~= "" ) then
-			if( save_restore.file_exists( 'schems/'..backup_file..'.mts' )) then
-				filename = minetest.get_worldpath()..'/schems/'..backup_file..'.mts';
-				minetest.place_schematic( start_pos, filename, "0", {}, true );
+			local filename = minetest.get_worldpath()..'/schems/'..backup_file;
+			if( save_restore.file_exists( filename..'.mts' )) then
+				minetest.place_schematic( start_pos, filename..'.mts', "0", {}, true );
 				-- no rotation needed - the metadata can be applied as-is (with the offset applied)
-				handle_schematics.restore_meta( backup_file, nil, start_pos, end_pos, 0, nil);
+				handle_schematics.restore_meta( filename, nil, start_pos, end_pos, 0, nil);
 				meta:set_string('backup', nil );
 			end
 		end
