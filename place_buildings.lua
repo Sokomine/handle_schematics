@@ -270,7 +270,7 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 end
 
 
-local function generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node, keep_ground)
+local function generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node, keep_ground, scaffolding_only)
 
 	local binfo = binfo_extra;
 	if( not( binfo ) and mg_villages) then
@@ -337,6 +337,9 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 	local c_dirt                 = minetest.get_content_id( "default:dirt" );
 	local c_dirt_with_grass      = minetest.get_content_id( "default:dirt_with_grass" );
 	local c_dirt_with_snow       = minetest.get_content_id( "default:dirt_with_snow" );
+
+	local c_scaffolding          = minetest.get_content_id( "handle_schematics:support" );
+	local c_dig_here             = minetest.get_content_id( "handle_schematics:dig_here" );
 
 	local scm_x = 0;
 	local scm_z = 0;
@@ -428,7 +431,6 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 				local new_content = c_air;
 				local t = scm[y+1][xoff][zoff];
 
-				local node_content = data[a:index(ax, ay, az)];
 				if( binfo.yoff+y == 0 ) then
 					-- no snow on the gravel roads
 					if( node_content == c_dirt_with_snow or data[a:index(ax, ay+1, az)]==c_snow) then
@@ -438,7 +440,30 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 					ground_type = node_content;
 				end
 
-				if( not( t )) then
+				-- scaffolding nodes are only placed when there is air and there ought to be some node
+				if( scaffolding_only ) then
+					local current_content = data[a:index(ax, ay, az)];
+
+					-- there is air there right now, but there ought to be a node from the building
+					if( current_content == cid.c_air and t) then
+						data[ a:index(ax, ay, az)] = c_scaffolding;
+
+					-- we have the wrong node there
+					elseif( ((not(t) and current_content ~= cid.c_air)
+						 or (t and new_nodes[t[1]] and not(new_nodes[t[1]].ignore) and current_content ~= new_nodes[ t[1]].new_content))
+						-- TODO: detect wrong rotation (param2)
+
+						and current_content ~= c_scaffolding
+						and current_content ~= c_dig_here
+						and ay<maxp.y) then
+						-- there is air above; we can place a digging indicator
+						if( data[a:index(ax, ay+1, az)] == cid.c_air or data[a:index(ax, ay+1, az)]==c_scaffolding) then
+							data[ a:index(ax, ay+1, az)] = c_dig_here;
+						end
+					end
+
+				-- normal operations
+				elseif( not( t )) then
 					if( node_content ~= cid.c_plotmarker
 					   and (not(handle_schematics.moresnow_installed) or not(moresnow) or node_content ~= moresnow.c_snow_top )) then
 						data[ a:index(ax, ay, az)] = cid.c_air;
@@ -602,7 +627,8 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 			if( pos.road_material ) then
 				road_material = pos.road_material;
 			end
-			generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, road_material, true )
+			-- do not use scaffolding here; place the building directly
+			generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, road_material, true, false )
 		end
 	end
 
@@ -640,8 +666,10 @@ end
 -- 	binfo.axis		optional; relevant for some mirroring operations
 -- 
 -- replacement_list		contains replacements in the same list format as place_schematic uses
+-- keep_ground                  keep biome-specific ground nodes
+-- scaffolding_only             when true: place a scaffolding node where there is air; place nothing if there is a solid node
 --
-handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replacement_list, keep_ground)
+handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replacement_list, keep_ground, scaffolding_only)
 
 	if( not( replacement_list ) or type( replacement_list ) ~= 'table' ) then
 		return;
@@ -658,7 +686,8 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	local vm = minetest.get_voxel_manip()
 	local minp, maxp = vm:read_from_map(
 		{x = pos.x, y = pos.y, z = pos.z},
-		{x = pos.x+pos.bsizex, y = pos.y+binfo.ysize, z = pos.z+pos.bsizez} -- TODO
+		-- add one in height in case we need to add a dig_here-indicator
+		{x = pos.x+pos.bsizex, y = pos.y+binfo.ysize+1, z = pos.z+pos.bsizez} -- TODO
         )
 	local a = VoxelArea:new({MinEdge = minp, MaxEdge = maxp})
 	local data        = vm:get_data()
@@ -700,7 +729,7 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {} };
 
 	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
-	generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground);
+	generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
 
 	-- store the changed map data
 	vm:set_data(data);
@@ -718,7 +747,7 @@ end
 
 -- places a building read from file "building_name" on the map between start_pos and end_pos using luavoxelmanip
 -- returns error message on failure and nil on success
-handle_schematics.place_building_from_file = function( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, keep_ground )
+handle_schematics.place_building_from_file = function( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, keep_ground, scaffolding_only )
 	if( not( building_name )) then
 		return "No file name given. Cannot find the schematic.";
 	end
@@ -768,7 +797,7 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 	start_pos.no_plotmarker = no_plotmarker;
 
 	-- all those calls to on_construct need to be done now
-	local res = handle_schematics.place_building_using_voxelmanip( start_pos, binfo, replacement_list, keep_ground);
+	local res = handle_schematics.place_building_using_voxelmanip( start_pos, binfo, replacement_list, keep_ground, scaffolding_only);
 	if( not(res) or not( res.extra_calls )) then
 		return;
 	end
