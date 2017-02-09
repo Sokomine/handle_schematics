@@ -703,7 +703,8 @@ mirror = nil;
 			if( save_restore.file_exists( filename..'.mts' )) then
 				minetest.place_schematic( start_pos, filename..'.mts', "0", {}, true );
 				-- no rotation needed - the metadata can be applied as-is (with the offset applied)
-				handle_schematics.restore_meta( filename, nil, start_pos, end_pos, 0, nil);
+				-- restore_meta adds the worldpath automaticly
+				handle_schematics.restore_meta( '/schems/'..backup_file, nil, start_pos, end_pos, 0, nil);
 				meta:set_string('backup', nil );
 			end
 		end
