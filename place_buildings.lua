@@ -439,6 +439,7 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 	
 				local new_content = c_air;
 				local t = scm[y+1][xoff][zoff];
+				local node_content = data[a:index(ax, ay, az)];
 
 				if( binfo.yoff+y == 0 ) then
 					-- no snow on the gravel roads
@@ -486,7 +487,7 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 					end
 
 					-- replace all dirt and dirt with grass at that x,z coordinate with the stored ground grass node;
-					if( n.is_grass and keep_ground) then
+					if( n.is_grass and keep_ground and ground_type) then
 						new_content = ground_type;
 					end
 
