@@ -228,6 +228,11 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 				elseif( string.sub( new_node_name, -2 ) =="_b") then
 					new_nodes[ i ].is_door_b    = 1;
 				end
+
+			-- if we are placing a glass node, param2 needs to be set to 0
+			elseif( regnode and regnode.drawtype
+			    and (regnode.drawtype=="glasslike" or regnode.drawtype=="glasslike_framed" or regnode.drawtype=="glasslike_framed_optional")) then
+				new_nodes[ i ].set_pram2_to_0  = 1;
 			end
 
 
@@ -551,6 +556,10 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 					-- the sign may require some text to be written on it
 					elseif( n.is_sign ) then
 						table.insert( extra_calls.signs,  {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos});
+
+					-- glasslike nodes need to have param2 set to 0 (else they get a strange fill state)
+					elseif( n.set_pram2_to_0 ) then
+						param2_data[a:index(ax, ay, az)] = 0;
 
 					-- doors need the state param to be set (which depends on param2)
 					elseif( n.is_door_a ) then
