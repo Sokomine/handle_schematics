@@ -232,7 +232,11 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			-- if we are placing a glass node, param2 needs to be set to 0
 			elseif( regnode and regnode.drawtype
 			    and (regnode.drawtype=="glasslike" or regnode.drawtype=="glasslike_framed" or regnode.drawtype=="glasslike_framed_optional")) then
-				new_nodes[ i ].set_pram2_to_0  = 1;
+				new_nodes[ i ].set_param2_to_0  = 1;
+
+			-- torches can be 3d now; for that, they use diffrent nodes
+			elseif( new_node_name == 'mg_villages:torch' or new_node_name == 'default:torch' ) then
+				new_nodes[ i ].is_torch        = 1;
 			end
 
 
@@ -558,8 +562,18 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 						table.insert( extra_calls.signs,  {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos});
 
 					-- glasslike nodes need to have param2 set to 0 (else they get a strange fill state)
-					elseif( n.set_pram2_to_0 ) then
+					elseif( n.set_param2_to_0 ) then
 						param2_data[a:index(ax, ay, az)] = 0;
+
+					-- the old torch is split up into three new types
+					elseif( n.is_torch ) then
+						if( t[2]==0 ) then
+							data[ a:index(ax, ay, az )] = cid.c_torch_ceiling;
+						elseif( t[2]==1 ) then
+							data[ a:index(ax, ay, az )] = cid.c_torch;
+						else
+							data[ a:index(ax, ay, az )] = cid.c_torch_wall;
+						end
 
 					-- doors need the state param to be set (which depends on param2)
 					elseif( n.is_door_a ) then
@@ -623,6 +637,10 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 	cid.c_chest_pine       = handle_schematics.get_content_id_replaced( 'trees:chest_pine',       replacements );
 	cid.c_chest_spruce     = handle_schematics.get_content_id_replaced( 'trees:chest_spruce',     replacements );
 	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:sign_wall',      replacements );
+
+	cid.c_torch            = handle_schematics.get_content_id_replaced( 'default:torch',          replacements );
+	cid.c_torch_ceiling    = handle_schematics.get_content_id_replaced( 'default:torch_ceiling',  replacements );
+	cid.c_torch_wall       = handle_schematics.get_content_id_replaced( 'default:torch_wall',     replacements );
 --print('REPLACEMENTS: '..minetest.serialize( replacements.table )..' CHEST: '..tostring( minetest.get_name_from_content_id( cid.c_chest ))); -- TODO
 
 	local extranodes = {}
