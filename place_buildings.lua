@@ -178,6 +178,12 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			-- TODO: perhaps use a locked chest owned by the mob living there?
 			-- place a normal chest here
 			new_nodes[ i ].new_content   = cid.c_chest;
+
+		elseif(     node_name == 'default:chest'
+		   or   new_node_name == 'default:chest' ) then
+			new_nodes[ i ].is_replaced   = 1; -- currently unused
+			new_nodes[ i ].special_chest = 'cottages:chest_default';
+			new_nodes[ i ].new_content   = cid.c_chest;
 		end
 
 		-- only existing nodes can be placed
