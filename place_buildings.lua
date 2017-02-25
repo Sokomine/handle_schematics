@@ -182,8 +182,14 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 		elseif(     node_name == 'default:chest'
 		   or   new_node_name == 'default:chest' ) then
 			new_nodes[ i ].is_replaced   = 1; -- currently unused
-			new_nodes[ i ].special_chest = 'cottages:chest_default';
+			new_nodes[ i ].special_chest = 'default:chest';
 			new_nodes[ i ].new_content   = cid.c_chest;
+
+		elseif(     node_name == 'default:bookshelf'
+		    or  new_node_name == 'default:bookshelf' ) then
+			new_nodes[ i ].is_replaced   = 1; -- currently unused
+			new_nodes[ i ].special_chest = 'default:bookshelf';
+			new_nodes[ i ].new_content   = cid.c_bookshelf;
 		end
 
 		-- only existing nodes can be placed
@@ -210,6 +216,7 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 				new_nodes[ i ].is_tree      = 1;
 
 			elseif( new_content == cid.c_chest
+			   or   new_content == cid.c_bookshelf
 			   or   new_content == cid.c_chest_locked 
 			   or   new_content == cid.c_chest_shelf
 			   or   new_content == cid.c_chest_ash
@@ -634,6 +641,7 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 	local replacements = mg_villages.get_replacement_table( village.village_type, nil, village.to_add_data.replacements );
 
 	cid.c_chest            = handle_schematics.get_content_id_replaced( 'default:chest',          replacements );
+	cid.c_bookshelf        = handle_schematics.get_content_id_replaced( 'default:bookshelf',      replacements );
 	cid.c_chest_locked     = handle_schematics.get_content_id_replaced( 'default:chest_locked',   replacements );
 	cid.c_chest_shelf      = handle_schematics.get_content_id_replaced( 'cottages:shelf',         replacements );
 	cid.c_chest_ash        = handle_schematics.get_content_id_replaced( 'trees:chest_ash',        replacements );
