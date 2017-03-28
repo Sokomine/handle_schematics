@@ -5,6 +5,7 @@
 -- helper node that is used during construction of a house; scaffolding
 ---------------------------------------------------------------------------------------
 
+-- this node can be crafted
 minetest.register_node("handle_schematics:support", {
         description = "support structure for buildings",
         tiles = {"handle_schematics_support.png"},
@@ -14,11 +15,11 @@ minetest.register_node("handle_schematics:support", {
         climbable = true,
         paramtype = "light",
         drawtype = "plantlike",
-	-- the small selection box allows the player to dig one or two nodes below
-	selection_box = {
-                type = "fixed",
-                fixed = {-2 / 16, -0.5, -2 / 16, 2 / 16, 0.5, 2 / 16}
-        },
+--	-- the small selection box allows the player to dig one or two nodes below
+--	selection_box = {
+--                type = "fixed",
+--                fixed = {-2 / 16, -0.5, -2 / 16, 2 / 16, 0.5, 2 / 16}
+--        },
 })
 
 
@@ -27,6 +28,44 @@ minetest.register_craft({
 	recipe = {
 		{"group:stick", "", "group:stick" }
         }
+})
+
+-- this node will only be placed by spawning a house with handle_schematics
+minetest.register_node("handle_schematics:support_setup", {
+        description = "support structure for buildings (configured)",
+        tiles = {"handle_schematics_support.png"},
+	groups = {snappy=3,choppy=3,oddly_breakable_by_hand=3},
+	visual_scale = 1.2,
+        walkable = false,
+        climbable = true,
+        paramtype = "light",
+        drawtype = "plantlike",
+	-- after it is digged, the node looses its information and becomes a normal, unconfigured one
+	drop = "handle_schematics:support",
+	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
+				if default.can_interact_with_node(clicker, pos) then
+					local meta = minetest.get_meta( pos );
+					local node_wanted = meta:get_string( "node_wanted" );
+					local param2_wanted = meta:get_int( "param2_wanted" );
+
+					if( not(meta) or not(node_wanted) or node_wanted == "" or not(clicker)) then
+						return itemstack;
+					end
+
+					if( not( clicker:get_inventory():contains_item("main", node_wanted ))) then
+						minetest.chat_send_player( clicker:get_player_name(),
+							"You have no "..node_wanted..".");
+						return itemstack;
+					end
+
+					-- take the item from the player
+					clicker:get_inventory():remove_item("main", node_wanted);
+
+					minetest.env:add_node( pos, { name =  node_wanted, param1 = 0, param2 = param2_wanted } );
+
+				end
+				return itemstack;
+			end
 })
 
 

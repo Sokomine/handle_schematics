@@ -292,8 +292,73 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 end
 
 
-local function generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node, keep_ground, scaffolding_only)
+local function generate_building_what_to_place_here_and_how(t, node_content, new_nodes, cid, keep_ground, ground_type, mirror_x, mirror_z, pos  )
 
+	if( not( t )) then
+		if( node_content ~= cid.c_plotmarker
+		   and (not(handle_schematics.moresnow_installed) or not(moresnow) or node_content ~= moresnow.c_snow_top )) then
+			-- place nothing/air
+			return { new_content = cid.c_air, new_param2 = 0, n = {} };
+		end
+	end
+
+	-- take care of replacements
+	local n = new_nodes[ t[1] ]; -- t[1]: id of the old node
+	if( not( n.ignore )) then
+		new_content = n.new_content;
+	else
+		new_content = node_content;
+	end
+
+	-- replace all dirt and dirt with grass at that x,z coordinate with the stored ground grass node;
+	if( n.is_grass and keep_ground and ground_type) then
+		new_content = ground_type;
+	end
+
+	-- do not overwrite plotmarkers
+	if( new_content == cid.c_air and node_content == cid.c_plotmarker ) then
+		-- keep the old content
+		new_content = node_content;
+	end
+
+	-- the old torch is split up into three new types
+	if( n.is_torch ) then
+		if( t[2]==0 ) then
+			new_content = cid.c_torch_ceiling;
+		elseif( t[2]==1 ) then
+			new_content = cid.c_torch;
+		else
+			new_content = cid.c_torch_wall;
+		end
+	end
+
+	local param2 = t[2];
+	-- handle rotation
+	if(     n.paramtype2 ) then
+		if( n.change_param2 and  n.change_param2[ t[2] ]) then
+			param2 = n.change_param2[ param2 ];
+		end
+
+		if(     mirror_x ) then
+			param2 = handle_schematics.rotation_table[ n.paramtype2 ][ param2+1 ][ pos.brotate+1 ][ 2 ];
+		elseif( mirror_z ) then
+			param2 = handle_schematics.rotation_table[ n.paramtype2 ][ param2+1 ][ pos.brotate+1 ][ 3 ];
+		else
+			param2 = handle_schematics.rotation_table[ n.paramtype2 ][ param2+1 ][ pos.brotate+1 ][ 1 ];
+		end
+	end
+
+	-- glasslike nodes need to have param2 set to 0 (else they get a strange fill state)
+	if( n.set_param2_to_0 ) then
+		p2 = 0;
+	end
+
+	return { new_content = new_content, new_param2 = param2, n = n };
+end
+
+
+
+local function generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node, keep_ground, scaffolding_only)
 	local binfo = binfo_extra;
 	if( not( binfo ) and mg_villages) then
 		binfo = mg_villages.BUILDINGS[pos.btype]
@@ -360,7 +425,8 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 	local c_dirt_with_grass      = minetest.get_content_id( "default:dirt_with_grass" );
 	local c_dirt_with_snow       = minetest.get_content_id( "default:dirt_with_snow" );
 
-	local c_scaffolding          = minetest.get_content_id( "handle_schematics:support" );
+	local c_scaffolding_empty    = minetest.get_content_id( "handle_schematics:support" );
+	local c_scaffolding          = minetest.get_content_id( "handle_schematics:support_setup" );
 	local c_dig_here             = minetest.get_content_id( "handle_schematics:dig_here" );
 
 	local scm_x = 0;
@@ -463,138 +529,73 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 					ground_type = node_content;
 				end
 
-				-- scaffolding nodes are only placed when there is air and there ought to be some node
-				if( scaffolding_only ) then
-					local current_content = data[a:index(ax, ay, az)];
+--					-- we have the wrong node there
+--					elseif( ((not(t) and current_content ~= cid.c_air)
+--						 or (t and new_nodes[t[1]] and not(new_nodes[t[1]].ignore) and current_content ~= new_nodes[ t[1]].new_content))
+--						-- TODO: detect wrong rotation (param2)
+--
+--						and current_content ~= c_scaffolding
+--						and current_content ~= c_dig_here
+--						and ay<maxp.y) then
+--						-- there is air above; we can place a digging indicator
+--						if( data[a:index(ax, ay+1, az)] == cid.c_air or data[a:index(ax, ay+1, az)]==c_scaffolding) then
+--							data[ a:index(ax, ay+1, az)] = c_dig_here;
+--						end
+--					end
 
-					-- there is air there right now, but there ought to be a node from the building
-					if( current_content == cid.c_air and t) then
-						data[ a:index(ax, ay, az)] = c_scaffolding;
+				-- which node (and which rotation) do we need here?
+				local res = generate_building_what_to_place_here_and_how(t, node_content, new_nodes, cid, keep_ground, ground_type, mirror_x, mirror_z, pos  )
+				local new_content = res.new_content;
+				local param2      = res.new_param2;
+				local n           = res.n;
 
-					-- we have the wrong node there
-					elseif( ((not(t) and current_content ~= cid.c_air)
-						 or (t and new_nodes[t[1]] and not(new_nodes[t[1]].ignore) and current_content ~= new_nodes[ t[1]].new_content))
-						-- TODO: detect wrong rotation (param2)
+				-- scaffolding nodes are only placed when there is air now and there ought to be a node from the building
+				if( scaffolding_only and new_content and new_content ~= cid.c_air and new_content ~= cid.c_ignore) then
+					if(node_content == cid.c_air or node_content == c_scaffolding or node_content == c_scaffolding_empty) then
+						-- store what we expect/want at this place
+						table.insert( extra_calls.scaffolding, {x=ax, y=ay, z=az, node_wanted=new_content, param2_wanted=param2});
 
-						and current_content ~= c_scaffolding
-						and current_content ~= c_dig_here
-						and ay<maxp.y) then
-						-- there is air above; we can place a digging indicator
-						if( data[a:index(ax, ay+1, az)] == cid.c_air or data[a:index(ax, ay+1, az)]==c_scaffolding) then
-							data[ a:index(ax, ay+1, az)] = c_dig_here;
-						end
-					end
-
-				-- normal operations
-				elseif( not( t )) then
-					if( node_content ~= cid.c_plotmarker
-					   and (not(handle_schematics.moresnow_installed) or not(moresnow) or node_content ~= moresnow.c_snow_top )) then
-						data[ a:index(ax, ay, az)] = cid.c_air;
-					end
-				else
-					local n = new_nodes[ t[1] ]; -- t[1]: id of the old node
-					if( not( n.ignore )) then
-						new_content = n.new_content;
+						-- place scaffolding instead of the wanted node
+						new_content = c_scaffolding;
+						param2      = 0;
+						n           = {};
 					else
 						new_content = node_content;
+						param2      = param2_data[a:index(ax, ay, az)];
+						n           = {};
 					end
+				end
 
-					-- replace all dirt and dirt with grass at that x,z coordinate with the stored ground grass node;
-					if( n.is_grass and keep_ground and ground_type) then
-						new_content = ground_type;
-					end
+				-- actually change the node
+				data[       a:index(ax, ay, az)] = new_content;
+				param2_data[a:index(ax, ay, az)] = param2;
 
-					if( n.on_construct ) then
-						if( not( extra_calls.on_constr[ new_content ] )) then
-							extra_calls.on_constr[ new_content ] = { {x=ax, y=ay, z=az}};
-						else
-							table.insert( extra_calls.on_constr[ new_content ], {x=ax, y=ay, z=az});
-						end
-					end
-
-					-- do not overwrite plotmarkers
-					if( new_content ~= cid.c_air or node_content ~= cid.c_plotmarker ) then
-						data[       a:index(ax, ay, az)] = new_content;
-					end
-
-					-- handle rotation
-					if(     n.paramtype2 ) then
-						local param2 = t[2];
-						if( n.change_param2 and  n.change_param2[ t[2] ]) then
-							param2 = n.change_param2[ param2 ];
-						end
-	
-						local np2 = 0;
-						if(     mirror_x ) then
-							np2 = handle_schematics.rotation_table[ n.paramtype2 ][ param2+1 ][ pos.brotate+1 ][ 2 ];
-						elseif( mirror_z ) then
-							np2 = handle_schematics.rotation_table[ n.paramtype2 ][ param2+1 ][ pos.brotate+1 ][ 3 ];
-						else
-							np2 = handle_schematics.rotation_table[ n.paramtype2 ][ param2+1 ][ pos.brotate+1 ][ 1 ];
-						end
-
---[[
-						local param2list = handle_schematics.get_param2_rotated( n.paramtype2, param2);
-						local np2 = param2list[ pos.brotate + 1];
-						-- mirror
-						if(     mirror_x ) then
-							if(     #param2list==5) then
-								np2 = handle_schematics.mirror_facedir[ ((pos.brotate+1)%2)+1 ][ np2+1 ];
-							elseif( #param2list<5 
-							       and  ((pos.brotate%2==1 and (np2==4 or np2==5)) 
-						 	          or (pos.brotate%2==0 and (np2==2 or np2==3)))) then 
-								np2 = param2list[ (pos.brotate + 2)%4 +1];
-							end
-
-						elseif( mirror_z ) then
-							if(     #param2list==5) then
-								np2 = handle_schematics.mirror_facedir[ (pos.brotate     %2)+1 ][ np2+1 ];
-							elseif( #param2list<5 
-							       and  ((pos.brotate%2==0 and (np2==4 or np2==5)) 
-						 	          or (pos.brotate%2==1 and (np2==2 or np2==3)))) then 
-								np2 = param2list[ (pos.brotate + 2)%4 +1];
-							end
-						end
---]]
-
-						param2_data[a:index(ax, ay, az)] = np2;
+				-- some nodes need on_construct to be called in order to be set up properly
+				if( n.on_construct ) then
+					if( not( extra_calls.on_constr[ new_content ] )) then
+						extra_calls.on_constr[ new_content ] = { {x=ax, y=ay, z=az}};
 					else
-						param2_data[a:index(ax, ay, az)] = t[2];
+						table.insert( extra_calls.on_constr[ new_content ], {x=ax, y=ay, z=az});
 					end
+				end
 
+				-- store that a tree is to be grown there
+				if(     n.is_tree ) then
+					table.insert( extra_calls.trees,  {x=ax, y=ay, z=az, typ=new_content, snow=has_snow});
 
-					-- store that a tree is to be grown there
-					if(     n.is_tree ) then
-						table.insert( extra_calls.trees,  {x=ax, y=ay, z=az, typ=new_content, snow=has_snow});
+				-- we're dealing with a chest that might need filling
+				elseif( n.is_chestlike ) then
+					table.insert( extra_calls.chests, {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos, typ_name=n.special_chest});
 
-					-- we're dealing with a chest that might need filling
-					elseif( n.is_chestlike ) then
-						table.insert( extra_calls.chests, {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos, typ_name=n.special_chest});
+				-- the sign may require some text to be written on it
+				elseif( n.is_sign ) then
+					table.insert( extra_calls.signs,  {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos});
 
-					-- the sign may require some text to be written on it
-					elseif( n.is_sign ) then
-						table.insert( extra_calls.signs,  {x=ax, y=ay, z=az, typ=new_content, bpos_i=building_nr_in_bpos});
-
-					-- glasslike nodes need to have param2 set to 0 (else they get a strange fill state)
-					elseif( n.set_param2_to_0 ) then
-						param2_data[a:index(ax, ay, az)] = 0;
-
-					-- the old torch is split up into three new types
-					elseif( n.is_torch ) then
-						if( t[2]==0 ) then
-							data[ a:index(ax, ay, az )] = cid.c_torch_ceiling;
-						elseif( t[2]==1 ) then
-							data[ a:index(ax, ay, az )] = cid.c_torch;
-						else
-							data[ a:index(ax, ay, az )] = cid.c_torch_wall;
-						end
-
-					-- doors need the state param to be set (which depends on param2)
-					elseif( n.is_door_a ) then
-						table.insert( extra_calls.door_a, {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
-					elseif( n.is_door_b ) then
-						table.insert( extra_calls.door_b, {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
-					end
+				-- doors need the state param to be set (which depends on param2)
+				elseif( n.is_door_a ) then
+					table.insert( extra_calls.door_a, {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
+				elseif( n.is_door_b ) then
+					table.insert( extra_calls.door_b, {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
 				end
 			end
 		end
@@ -659,7 +660,7 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 --print('REPLACEMENTS: '..minetest.serialize( replacements.table )..' CHEST: '..tostring( minetest.get_name_from_content_id( cid.c_chest ))); -- TODO
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {} };
 
 	for i, pos in ipairs(bpos) do
 		-- roads are only placed if there are at least mg_villages.MINIMAL_BUILDUNGS_FOR_ROAD_PLACEMENT buildings in the village
@@ -764,11 +765,15 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	cid.c_chest_spruce     = handle_schematics.get_content_id_replaced( 'trees:chest_spruce',     replacements );
 	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:sign_wall',      replacements );
 
+	cid.c_torch            = handle_schematics.get_content_id_replaced( 'default:torch',          replacements );
+	cid.c_torch_ceiling    = handle_schematics.get_content_id_replaced( 'default:torch_ceiling',  replacements );
+	cid.c_torch_wall       = handle_schematics.get_content_id_replaced( 'default:torch_wall',     replacements );
+
 	-- for roads
 	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:gravel',         replacements );
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {} };
 
 	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
 	generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
@@ -790,6 +795,7 @@ end
 -- places a building read from file "building_name" on the map between start_pos and end_pos using luavoxelmanip
 -- returns error message on failure and nil on success
 handle_schematics.place_building_from_file = function( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, keep_ground, scaffolding_only )
+	--print ("scaffolding place_building_from_file: "..minetest.serialize( scaffolding_only ));
 	if( not( building_name )) then
 		return "No file name given. Cannot find the schematic.";
 	end
@@ -880,6 +886,21 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 		-- .mts files come with extra .meta file (if such a .meta file was created)
 		-- TODO: restore metadata for .mts files
 		--handle_schematics.restore_meta( filename, nil, binfo.metadata, start_pos, end_pos, start_pos.brotate, mirror);
+	end
+
+
+	for k, v in pairs( res.extra_calls.scaffolding ) do
+
+		local node_name = minetest.get_name_from_content_id(v.node_wanted);
+		local descr = tostring(node_name);
+		if( node_name and minetest.registered_nodes[ node_name ] and minetest.registered_nodes[ node_name ].description ) then
+			descr =  minetest.registered_nodes[ node_name ].description;
+		end
+
+		local meta = minetest.get_meta( v );
+		meta:set_string( "node_wanted", node_name );
+		meta:set_int(  "param2_wanted", v.param2_wanted );
+		meta:set_string( "infotext", "Needed: "..descr );
 	end
 end
 
