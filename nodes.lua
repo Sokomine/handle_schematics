@@ -42,6 +42,8 @@ minetest.register_node("handle_schematics:support_setup", {
         drawtype = "plantlike",
 	-- after it is digged, the node looses its information and becomes a normal, unconfigured one
 	drop = "handle_schematics:support",
+	-- note: mobs that want to use this function ought to provide "clicker" in a way so that clicker:get_inventory
+	--       can get used (at least if they want to have a limited inventory)
 	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
 				if default.can_interact_with_node(clicker, pos) then
 					local meta = minetest.get_meta( pos );
@@ -75,8 +77,10 @@ minetest.register_node("handle_schematics:support_setup", {
 							return itemstack;
 						end
 						-- give the player some feedback (might scroll a bit..)
-						minetest.chat_send_player( clicker:get_player_name(),
-							"Placed "..( minetest.registered_nodes[ node_really_wanted ].description or node_really_wanted)..".");
+						if( clicker:is_player()) then
+							minetest.chat_send_player( clicker:get_player_name(),
+								"Placed "..( minetest.registered_nodes[ node_really_wanted ].description or node_really_wanted)..".");
+						end
 						-- take the item from the player (provided it actually is a player and not a mob)
 						clicker:get_inventory():remove_item("main", node_really_wanted);
 					end
