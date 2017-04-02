@@ -3,6 +3,14 @@ handle_schematics = {}
 
 handle_schematics.modpath = minetest.get_modpath( "handle_schematics");
 
+-- if the player builds a house manually, there are some nodes the players cannot
+-- supply as the nodes are not obtainable (only their drop) - thus, in most cases,
+-- the drop is what we ask for; except for these nodes where the origianl node
+-- can be obtained through smelting/crafting:
+handle_schematics.direct_instead_of_drop = {
+	"default:stone", "default:desert_stone", "default:clay"
+	};
+
 -- adds worldedit_file.* namespace
 -- deserialize worldedit savefiles
 dofile(handle_schematics.modpath.."/worldedit_file.lua")

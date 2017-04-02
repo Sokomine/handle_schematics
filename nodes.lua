@@ -52,14 +52,34 @@ minetest.register_node("handle_schematics:support_setup", {
 						return itemstack;
 					end
 
-					if( not( clicker:get_inventory():contains_item("main", node_wanted ))) then
-						minetest.chat_send_player( clicker:get_player_name(),
-							"You have no "..node_wanted..".");
-						return itemstack;
-					end
+					if( clicker and clicker.get_inventory) then
+						local node_really_wanted = node_wanted;
 
-					-- take the item from the player
-					clicker:get_inventory():remove_item("main", node_wanted);
+						-- some nodes like i.e. dirt with grass or stone with coal cannot be obtained;
+						-- in such a case we ask for the drop
+						if(    minetest.registered_nodes[ node_wanted ]
+						   -- provided the drop actually exists
+						   and minetest.registered_nodes[ node_wanted ].drop
+						   and minetest.registered_items[ minetest.registered_nodes[ node_wanted ].drop ]
+						   -- stone, desertstone and clay can be obtained
+						   and not( handle_schematics.direct_instead_of_drop[ node_wanted ])) then
+							node_really_wanted = minetest.registered_nodes[ node_wanted ].drop;
+						end
+
+						if(not( clicker:get_inventory():contains_item("main", node_really_wanted ))) then
+							if( clicker:is_player()) then
+								minetest.chat_send_player( clicker:get_player_name(),
+									"You have no "..( minetest.registered_nodes[ node_really_wanted ].description or "such node")..
+									" ["..node_really_wanted.."].");
+							end
+							return itemstack;
+						end
+						-- give the player some feedback (might scroll a bit..)
+						minetest.chat_send_player( clicker:get_player_name(),
+							"Placed "..( minetest.registered_nodes[ node_really_wanted ].description or node_really_wanted)..".");
+						-- take the item from the player (provided it actually is a player and not a mob)
+						clicker:get_inventory():remove_item("main", node_really_wanted);
+					end
 
 					minetest.env:add_node( pos, { name =  node_wanted, param1 = 0, param2 = param2_wanted } );
 
@@ -75,7 +95,7 @@ minetest.register_node("handle_schematics:dig_here", {
 	tiles = {"default_tool_mesepick.png^[colorize:#FF0000^[transformFXR90"},
 	inventory_image = "default_tool_mesepick.png^[colorize:#FF0000^[transformFXR90";
 	-- falling node; will notice if the node below it is beeing digged; cannot be destroyed the normal way
-	groups = {falling_node = 1},
+	groups = {}, --{falling_node = 1},
 	visual_scale = 0.6,
 	walkable = false,
 	climbable = true,

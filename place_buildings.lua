@@ -550,8 +550,27 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 				local n           = res.n;
 
 				-- scaffolding nodes are only placed when there is air now and there ought to be a node from the building
-				if( scaffolding_only and new_content and new_content ~= cid.c_air and new_content ~= cid.c_ignore) then
-					if(node_content == cid.c_air or node_content == c_scaffolding or node_content == c_scaffolding_empty) then
+				if( scaffolding_only ) then
+					if(new_content and new_content ~= node_content
+					   and node_content ~= cid.c_air and node_content ~= c_scaffolding and node_content ~= c_scaffolding_empty and node_content ~= c_dig_here) then
+						local h;
+						for h=ay, maxp.y do
+							if( data[ a:index(ax, h, az)] == cid.c_air or data[ a:index(ax, h, az)] == c_dig_here) then
+								if( data[ a:index(ax, h, az)] ~= c_dig_here ) then
+									table.insert( extra_calls.scaffolding, {x=ax, y=h, z=az, dig_down = h-ay});
+								end
+								data[ a:index(ax, h, az)] = c_dig_here;
+								-- TODO: count how many dig-here-indicators where placed
+								break;
+							end
+						end
+						-- keep the old content
+						new_content = node_content;
+						param2      = param2_data[a:index(ax, ay, az)];
+						n           = {};
+
+					elseif(new_content and new_content ~= cid.c_air and new_content ~= cid.c_ignore
+					  and (node_content == cid.c_air or node_content == c_scaffolding or node_content == c_scaffolding_empty)) then
 						-- store what we expect/want at this place
 						table.insert( extra_calls.scaffolding, {x=ax, y=ay, z=az, node_wanted=new_content, param2_wanted=param2});
 
@@ -891,16 +910,34 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 
 	for k, v in pairs( res.extra_calls.scaffolding ) do
 
-		local node_name = minetest.get_name_from_content_id(v.node_wanted);
-		local descr = tostring(node_name);
-		if( node_name and minetest.registered_nodes[ node_name ] and minetest.registered_nodes[ node_name ].description ) then
-			descr =  minetest.registered_nodes[ node_name ].description;
-		end
+		if( v.node_wanted) then
+			local node_name = minetest.get_name_from_content_id(v.node_wanted);
+			local descr = tostring(node_name);
+			if( node_name and minetest.registered_nodes[ node_name ] ) then
+				if(     minetest.registered_nodes[ node_name ].drop
+				    -- the drop can be a craftitem
+				    and minetest.registered_items[ minetest.registered_nodes[ node_name ].drop ]
+				    and not( handle_schematics.direct_instead_of_drop[ node_name ])) then
+					descr =  minetest.registered_items[ minetest.registered_nodes[ node_name ].drop ].description;
+				elseif( minetest.registered_nodes[ node_name ].description ) then
+					descr =  minetest.registered_nodes[ node_name ].description;
+				else
+					descr = "- ? -";
+				end
+			end
 
-		local meta = minetest.get_meta( v );
-		meta:set_string( "node_wanted", node_name );
-		meta:set_int(  "param2_wanted", v.param2_wanted );
-		meta:set_string( "infotext", "Needed: "..descr );
+			local meta = minetest.get_meta( v );
+			meta:set_string( "node_wanted", node_name );
+			meta:set_int(  "param2_wanted", v.param2_wanted );
+			meta:set_string( "infotext", "Needed: "..descr );
+		elseif( v.dig_down ) then
+			local meta = minetest.get_meta( v );
+			if( v.dig_down > 1 ) then
+				meta:set_string( "infotext", "Dig "..v.dig_down.." blocks down here.");
+			else
+				meta:set_string( "infotext", "Dig the block below.");
+			end
+		end
 	end
 end
 
