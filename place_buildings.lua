@@ -1023,7 +1023,7 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 				meta:set_string( "infotext", "Dig the block below.");
 			end
 			-- store the position of the build chest so that npc can locate it more easily
-			meta:set_string( "chest_pos", inetest.pos_to_string( pos, 0 );
+			meta:set_string( "chest_pos", inetest.pos_to_string( pos, 0 ));
 			-- count them
 			nodes_to_dig = nodes_to_dig + v.dig_down;
 		end
