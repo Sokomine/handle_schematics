@@ -702,7 +702,7 @@ mirror = nil;
 		if( not( minetest.check_player_privs( pname, {creative=true}))) then
 			use_scaffolding = true;
 		end
-		fields.error_msg = handle_schematics.place_building_from_file( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, false, use_scaffolding );
+		fields.error_msg = handle_schematics.place_building_from_file( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, false, use_scaffolding, pos );
 		if( fields.error_msg ) then
 			fields.error_msg = 'Error: '..tostring( fields.error_msg );
 		end
@@ -732,7 +732,7 @@ mirror = nil;
 					local axis   = build_chest.building[ building_name ].axis;
 					local no_plotmarker = true;
 					local replacement_list = {};
-					fields.error_msg = handle_schematics.place_building_from_file( start_pos, end_pos, filename, replacement_list, "180", 3, 1, no_plotmarker, false, true );
+					fields.error_msg = handle_schematics.place_building_from_file( start_pos, end_pos, filename, replacement_list, "180", 3, 1, no_plotmarker, false, true, pos );
 					if( fields.error_msg ) then
 						fields.error_msg = 'Error: '..tostring( fields.error_msg );
 						minetest.chat_send_player( pname, fields.error_msg ); -- TODO: debug message

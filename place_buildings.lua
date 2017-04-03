@@ -889,7 +889,7 @@ end
 
 -- places a building read from file "building_name" on the map between start_pos and end_pos using luavoxelmanip
 -- returns error message on failure and nil on success
-handle_schematics.place_building_from_file = function( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, keep_ground, scaffolding_only )
+handle_schematics.place_building_from_file = function( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, keep_ground, scaffolding_only, plotmarker_pos )
 	--print ("scaffolding place_building_from_file: "..minetest.serialize( scaffolding_only ));
 	if( not( building_name )) then
 		return "No file name given. Cannot find the schematic.";
@@ -1023,7 +1023,9 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 				meta:set_string( "infotext", "Dig the block below.");
 			end
 			-- store the position of the build chest so that npc can locate it more easily
-			meta:set_string( "chest_pos", inetest.pos_to_string( pos, 0 ));
+			if( plotmarker_pos ) then
+				meta:set_string( "chest_pos", minetest.pos_to_string( plotmarker_pos, 0 ));
+			end
 			-- count them
 			nodes_to_dig = nodes_to_dig + v.dig_down;
 		end
