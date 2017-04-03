@@ -41,7 +41,8 @@ minetest.register_node("handle_schematics:support_setup", {
         paramtype = "light",
         drawtype = "plantlike",
 	-- after it is digged, the node looses its information and becomes a normal, unconfigured one
-	drop = "handle_schematics:support",
+	-- -> changed to no drop because it is automaticly placed in almost unlimited amount
+	drop = "", --"handle_schematics:support",
 	-- note: mobs that want to use this function ought to provide "clicker" in a way so that clicker:get_inventory
 	--       can get used (at least if they want to have a limited inventory)
 	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
@@ -101,7 +102,9 @@ minetest.register_node("handle_schematics:dig_here", {
 	tiles = {"default_tool_mesepick.png^[colorize:#FF0000^[transformFXR90"},
 	inventory_image = "default_tool_mesepick.png^[colorize:#FF0000^[transformFXR90";
 	-- falling node; will notice if the node below it is beeing digged; cannot be destroyed the normal way
-	groups = {}, --{falling_node = 1},
+	groups = {snappy=3,choppy=3,oddly_breakable_by_hand=3}, --{falling_node = 1},
+	-- no drop because it is only an indicator and automaticly placed
+	drop = "",
 	visual_scale = 0.6,
 	walkable = false,
 	climbable = true,
