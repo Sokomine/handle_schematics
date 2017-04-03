@@ -77,7 +77,9 @@ minetest.register_node("handle_schematics:support_setup", {
 							return itemstack;
 						end
 						-- give the player some feedback (might scroll a bit..)
-						if( clicker:is_player()) then
+						if( clicker:is_player()
+						   and minetest.registered_nodes[ node_really_wanted ]
+						   and minetest.registered_nodes[ node_really_wanted ].description) then
 							minetest.chat_send_player( clicker:get_player_name(),
 								"Placed "..( minetest.registered_nodes[ node_really_wanted ].description or node_really_wanted)..".");
 						end

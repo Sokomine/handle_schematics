@@ -408,8 +408,9 @@ build_chest.update_formspec = function( pos, page, player, fields )
 	-- the building has been placed; offer to restore a backup
 	local backup_file   = meta:get_string('backup');
 	if( backup_file and backup_file ~= "" ) then
-		return formspec.."button[3,3;3,0.5;restore_backup;Restore original landscape]"..
-		                 "button[3,4;3,0.5;show_materials;Show materials used]";
+		return formspec.."button[3,3;3,0.5;proceed_with_scaffolding;Check status/update]"..
+				 "button[3,4;3,0.5;restore_backup;Restore original landscape]"..
+		                 "button[3,5;3,0.5;show_materials;Show materials used]";
 	end
 
 	local current_path = minetest.deserialize( meta:get_string( 'current_path' ) or 'return {}' );
@@ -701,11 +702,25 @@ mirror = nil;
 		if( start_pos and end_pos and start_pos.x and end_pos.x and backup_file and backup_file ~= "" ) then
 			local filename = minetest.get_worldpath()..'/schems/'..backup_file;
 			if( save_restore.file_exists( filename..'.mts' )) then
-				minetest.place_schematic( start_pos, filename..'.mts', "0", {}, true );
-				-- no rotation needed - the metadata can be applied as-is (with the offset applied)
-				-- restore_meta adds the worldpath automaticly
-				handle_schematics.restore_meta( '/schems/'..backup_file, nil, start_pos, end_pos, 0, nil);
-				meta:set_string('backup', nil );
+				if( minetest.check_player_privs( pname, {creative=true})) then
+					minetest.place_schematic( start_pos, filename..'.mts', "0", {}, true );
+					-- no rotation needed - the metadata can be applied as-is (with the offset applied)
+					-- restore_meta adds the worldpath automaticly
+					handle_schematics.restore_meta( '/schems/'..backup_file, nil, start_pos, end_pos, 0, nil);
+					meta:set_string('backup', nil );
+				else
+					minetest.chat_send_player( pname, "Trying to restore backup from file "..filename); -- TODO: debug message
+					local rotate = meta:get_string('rotate');
+					local mirror = meta:get_string('mirror');
+					local axis   = build_chest.building[ building_name ].axis;
+					local no_plotmarker = true;
+					local replacement_list = {};
+					fields.error_msg = handle_schematics.place_building_from_file( start_pos, end_pos, filename, replacement_list, "180", 3, 1, no_plotmarker, false, true );
+					if( fields.error_msg ) then
+						fields.error_msg = 'Error: '..tostring( fields.error_msg );
+						minetest.chat_send_player( pname, fields.error_msg ); -- TODO: debug message
+					end
+				end
 			end
 		end
 	

@@ -294,12 +294,19 @@ end
 
 local function generate_building_what_to_place_here_and_how(t, node_content, new_nodes, cid, keep_ground, ground_type, mirror_x, mirror_z, pos  )
 
+	local new_content = node_content;
+
 	if( not( t )) then
 		if( node_content ~= cid.c_plotmarker
 		   and (not(handle_schematics.moresnow_installed) or not(moresnow) or node_content ~= moresnow.c_snow_top )) then
 			-- place nothing/air
 			return { new_content = cid.c_air, new_param2 = 0, n = {} };
 		end
+	end
+
+	-- TODO: there ought to be no error here....
+	if( not( t) or not( t[1] ) or not( new_nodes[ t[1]]) or not( new_nodes[ t[1]].new_content)) then
+		return { new_content = cid.c_air, new_param2 = 0, n = {} };
 	end
 
 	-- take care of replacements
@@ -319,6 +326,11 @@ local function generate_building_what_to_place_here_and_how(t, node_content, new
 	if( new_content == cid.c_air and node_content == cid.c_plotmarker ) then
 		-- keep the old content
 		new_content = node_content;
+	end
+
+	-- remove misplaced scaffolding nodes
+	if( new_content == cid.c_air and (node_content == cid.c_scaffolding or node_content == cid.c_scaffolding_empty)) then
+		new_content = cid.c_air;
 	end
 
 	-- the old torch is split up into three new types
@@ -451,6 +463,10 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 		if( binfo.axis and binfo.axis == 1 ) then
 			mirror_x = true;
 			mirror_z = false;
+		-- used for "restore original landscape"
+		elseif( binfo.axis and binfo.axis == 3 ) then
+			mirror_z = true;
+			mirror_x = true;
 		else
 			mirror_x = false;
 			mirror_z = true;
@@ -510,6 +526,23 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 
 		local has_snow    = false;
 		local ground_type = c_dirt_with_grass; 
+
+		-- remove all dig_here-indicators
+		if( scaffolding_only ) then
+			local ax = pos.x+x;
+			local az = pos.z+z;
+			for y = 0, binfo.ysize-1 do
+				local ay = pos.y+y+binfo.yoff;
+				if (ax >= minp.x and ax <= maxp.x) and (ay >= minp.y and ay <= maxp.y) and (az >= minp.z and az <= maxp.z) then
+					if( data[a:index(ax, ay, az)] == c_dig_here ) then
+						data[a:index(ax, ay, az)] = cid.c_air;
+						-- remove old and obsolete metadata
+						table.insert( extra_calls.clear_meta, {x=ax, y=ay, z=az});
+					end
+				end
+			end
+		end
+
 		for y = 0, binfo.ysize-1 do
 			local ax = pos.x+x;
 			local ay = pos.y+y+binfo.yoff;
@@ -551,11 +584,16 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 
 				-- scaffolding nodes are only placed when there is air now and there ought to be a node from the building
 				if( scaffolding_only ) then
+					-- a node is to be placed here AND it is diffrent from the existing one AND
+					-- the existing node is not air, scaffolding, special scaffolding or a dig-here-indicator
+					-- -> the existing node needs to be digged
 					if(new_content and new_content ~= node_content
 					   and node_content ~= cid.c_air and node_content ~= c_scaffolding and node_content ~= c_scaffolding_empty and node_content ~= c_dig_here) then
 						local h;
+						-- search upward for the first empty (air) node or dig-here-indicator and place a dig_here-indicator
 						for h=ay, maxp.y do
-							if( data[ a:index(ax, h, az)] == cid.c_air or data[ a:index(ax, h, az)] == c_dig_here) then
+							local node_here = data[ a:index(ax, h, az)];
+							if( node_here == cid.c_air or node_here == c_dig_here or node_here == c_scaffolding or node_here == c_scaffolding_empty ) then
 								if( data[ a:index(ax, h, az)] ~= c_dig_here ) then
 									table.insert( extra_calls.scaffolding, {x=ax, y=h, z=az, dig_down = h-ay});
 								end
@@ -569,15 +607,34 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 						param2      = param2_data[a:index(ax, ay, az)];
 						n           = {};
 
+					-- a new node is to be placed here AND it is not air or ignore AND
+					-- the existing node is either air, scaffolding or special scaffolding
+					-- -> place special scaffolding to indicate which node is wanted here
 					elseif(new_content and new_content ~= cid.c_air and new_content ~= cid.c_ignore
 					  and (node_content == cid.c_air or node_content == c_scaffolding or node_content == c_scaffolding_empty)) then
 						-- store what we expect/want at this place
 						table.insert( extra_calls.scaffolding, {x=ax, y=ay, z=az, node_wanted=new_content, param2_wanted=param2});
 
 						-- place scaffolding instead of the wanted node
+						-- TODO: count how many scaffolding nodes where placed
 						new_content = c_scaffolding;
 						param2      = 0;
 						n           = {};
+
+					-- a new node is to be placed here AND it is air AND
+					-- there is a scaffolding node already
+					-- -> remove this misplaced scaffolding node
+					elseif( new_content and new_content == cid.c_air
+					  and (node_content == c_scaffolding or node_content == c_scaffolding_empty)) then
+
+						-- we need to remove metadata at this position
+						table.insert( extra_calls.clear_meta, {x=ax, y=ay, z=az});
+
+						new_content = cid.c_air;
+						param2      = 0;
+						n           = {};
+
+					-- let the old node continue to exist
 					else
 						new_content = node_content;
 						param2      = param2_data[a:index(ax, ay, az)];
@@ -679,7 +736,7 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 --print('REPLACEMENTS: '..minetest.serialize( replacements.table )..' CHEST: '..tostring( minetest.get_name_from_content_id( cid.c_chest ))); -- TODO
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {} };
 
 	for i, pos in ipairs(bpos) do
 		-- roads are only placed if there are at least mg_villages.MINIMAL_BUILDUNGS_FOR_ROAD_PLACEMENT buildings in the village
@@ -792,7 +849,7 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:gravel',         replacements );
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {} };
 
 	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
 	generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
@@ -867,6 +924,14 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 	local res = handle_schematics.place_building_using_voxelmanip( start_pos, binfo, replacement_list, keep_ground, scaffolding_only);
 	if( not(res) or not( res.extra_calls )) then
 		return;
+	end
+
+	-- clear metadata where needed
+	for k, v in pairs( res.extra_calls.clear_meta ) do
+		local meta = minetest.get_meta( v );
+		-- clear metadata at this position
+		meta:from_table( {inventory = {}, fields = {}});
+		v = nil;
 	end
 
 	-- call on_construct where needed;

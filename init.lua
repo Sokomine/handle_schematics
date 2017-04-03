@@ -7,9 +7,10 @@ handle_schematics.modpath = minetest.get_modpath( "handle_schematics");
 -- supply as the nodes are not obtainable (only their drop) - thus, in most cases,
 -- the drop is what we ask for; except for these nodes where the origianl node
 -- can be obtained through smelting/crafting:
-handle_schematics.direct_instead_of_drop = {
-	"default:stone", "default:desert_stone", "default:clay"
-	};
+handle_schematics.direct_instead_of_drop = {};
+handle_schematics.direct_instead_of_drop[ "default:stone" ] = true;
+handle_schematics.direct_instead_of_drop[ "default:desert_stone" ] = true;
+handle_schematics.direct_instead_of_drop[ "default:desert_clay" ] = true;
 
 -- adds worldedit_file.* namespace
 -- deserialize worldedit savefiles
