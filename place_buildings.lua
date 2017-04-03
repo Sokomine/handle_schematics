@@ -370,6 +370,7 @@ end
 
 
 
+-- if scaffolding_only is set, a statistic of missing_nodes will be returned
 local function generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node, keep_ground, scaffolding_only)
 	local binfo = binfo_extra;
 	if( not( binfo ) and mg_villages) then
@@ -429,6 +430,9 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 	if( binfo.farming_plus and binfo.farming_plus == 1 and pos.fruit and mg_villages) then
 		mg_villages.get_fruit_replacements( replacements, pos.fruit);
 	end
+
+	-- statistic containing information about nodes that still need to be placed (only of intrest if scaffolding_only is set)
+	local missing_nodes = {};
 
 	local c_ignore = minetest.get_content_id("ignore")
 	local c_air = minetest.get_content_id("air")
@@ -584,6 +588,8 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 
 				-- scaffolding nodes are only placed when there is air now and there ought to be a node from the building
 				if( scaffolding_only ) then
+					-- new_content is adjusted later on, so store here what might be missing so that we can create the missing_nodes statistic
+					local new_content_wanted = new_content;
 					-- a node is to be placed here AND it is diffrent from the existing one AND
 					-- the existing node is not air, scaffolding, special scaffolding or a dig-here-indicator
 					-- -> the existing node needs to be digged
@@ -598,7 +604,7 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 									table.insert( extra_calls.scaffolding, {x=ax, y=h, z=az, dig_down = h-ay});
 								end
 								data[ a:index(ax, h, az)] = c_dig_here;
-								-- TODO: count how many dig-here-indicators where placed
+								-- how much is to be digged is counted later on (when evaluating extra_calls.scaffolding)
 								break;
 							end
 						end
@@ -639,6 +645,16 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 						new_content = node_content;
 						param2      = param2_data[a:index(ax, ay, az)];
 						n           = {};
+					end
+
+					-- create a statistic of all missing nodes
+					if( node_content ~= new_content_wanted and node_content and new_content_wanted
+					   and new_content_wanted ~= cid.c_air and new_content_wanted ~= cid.c_ignore ) then
+						if( not( missing_nodes[ new_content_wanted ])) then
+							missing_nodes[ new_content_wanted ] = 1;
+						else
+							missing_nodes[ new_content_wanted ] = missing_nodes[ new_content_wanted ] + 1;
+						end
 					end
 				end
 
@@ -696,6 +712,9 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 			end
 		end
 	end
+	end
+	if( scaffolding_only ) then
+		return missing_nodes;
 	end
 end
 
@@ -852,7 +871,7 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {} };
 
 	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
-	generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
+	local missing_nodes = generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
 
 	-- store the changed map data
 	vm:set_data(data);
@@ -863,7 +882,7 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 
 -- TODO: do the calls for the extranodes as well
 	-- replacements are in list format for minetest.place_schematic(..) type spawning
-	return { extranodes = extranodes, replacements = replacements.list, extra_calls = extra_calls };
+	return { extranodes = extranodes, replacements = replacements.list, extra_calls = extra_calls, missing_nodes = missing_nodes };
 end
 
 
@@ -973,6 +992,7 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 	end
 
 
+	local nodes_to_dig = 0;
 	for k, v in pairs( res.extra_calls.scaffolding ) do
 
 		if( v.node_wanted) then
@@ -1002,8 +1022,19 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 			else
 				meta:set_string( "infotext", "Dig the block below.");
 			end
+			-- count them
+			nodes_to_dig = nodes_to_dig + v.dig_down;
 		end
 	end
+
+	if( res.missing_nodes ) then
+		local missing = {};
+		for k,v in pairs( res.missing_nodes ) do
+			missing[ minetest.get_name_from_content_id( k ) ] = v;
+		end
+		minetest.chat_send_player("singleplayer", "Missing nodes: "..minetest.serialize( missing )); -- TODO (not always singleplayer...)
+	end
+	minetest.chat_send_player("singleplayer", "You need to dig/remove "..nodes_to_dig.." nodes."); -- TODO (not always singleplayer...)
 end
 
 
