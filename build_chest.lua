@@ -408,9 +408,16 @@ build_chest.update_formspec = function( pos, page, player, fields )
 	-- the building has been placed; offer to restore a backup
 	local backup_file   = meta:get_string('backup');
 	if( backup_file and backup_file ~= "" ) then
-		return formspec.."button[3,3;3,0.5;proceed_with_scaffolding;Check status/update]"..
-				 "button[3,4;3,0.5;restore_backup;Restore original landscape]"..
+		local is_restore = meta:get_int('is_restore');
+		if( not(is_restore) or is_restore ~= 1 ) then
+			return formspec.."button[2.5,3;4,0.5;proceed_with_scaffolding;Check project status/update]"..
+				 "button[2.5,4;4,0.5;restore_backup;Restore original landscape]"..
 		                 "button[3,5;3,0.5;show_materials;Show materials used]";
+		else
+			return formspec.."button[2,3;5,0.5;restore_backup;Check landscape restauration state/update]"..
+				 "button[2,4;5,0.5;proceed_with_scaffolding;Switch back to planned project]"..
+		                 "button[3,5;3,0.5;show_materials;Show materials used]";
+		end
 	end
 
 	local current_path = minetest.deserialize( meta:get_string( 'current_path' ) or 'return {}' );
@@ -557,6 +564,9 @@ end
 
 build_chest.on_receive_fields = function(pos, formname, fields, player)
 
+	if( not(pos)) then
+		return;
+	end
 	local meta = minetest.get_meta(pos);
 
 	local owner = meta:get_string('owner');
@@ -655,6 +665,8 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
 
 
 	elseif( fields.proceed_with_scaffolding ) then
+		-- used for indicating which mode (actual project or landscape restauration) we are in; here: actual project
+		meta:set_int('is_restore', 0);
 		local building_name = meta:get_string('building_name');
 		local start_pos     = minetest.deserialize( meta:get_string('start_pos'));
 		local end_pos       = minetest.deserialize( meta:get_string('end_pos'));
@@ -675,6 +687,7 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
 			minetest.chat_send_player( pname, 'CREATING backup schematic for this place in \"schems/'..base_filename..'.mts\".');
 		end
 		
+		local village_id   = meta:get_string( 'village_id' );
 		local replacement_list = build_chest.replacements_get_current( meta, village_id );
 		local rotate = meta:get_string('rotate');
 		local mirror = meta:get_string('mirror');
@@ -699,6 +712,8 @@ mirror = nil;
 		local start_pos     = minetest.deserialize( meta:get_string('start_pos'));
 		local end_pos       = minetest.deserialize( meta:get_string('end_pos'));
 		local backup_file   = meta:get_string( 'backup' );
+		-- used for indicating which mode (actual project or landscape restauration) we are in; here: landscape restauration
+		meta:set_int('is_restore', 1);
 		if( start_pos and end_pos and start_pos.x and end_pos.x and backup_file and backup_file ~= "" ) then
 			local filename = minetest.get_worldpath()..'/schems/'..backup_file;
 			if( save_restore.file_exists( filename..'.mts' )) then
@@ -708,6 +723,8 @@ mirror = nil;
 					-- restore_meta adds the worldpath automaticly
 					handle_schematics.restore_meta( '/schems/'..backup_file, nil, start_pos, end_pos, 0, nil);
 					meta:set_string('backup', nil );
+					-- we are back to the beginning - no landscape backup present
+					meta:set_int('is_restore', 0);
 				else
 					minetest.chat_send_player( pname, "Trying to restore backup from file "..filename); -- TODO: debug message
 					local rotate = meta:get_string('rotate');
