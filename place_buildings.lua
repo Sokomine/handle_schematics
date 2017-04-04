@@ -1060,7 +1060,7 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 				missing[ node_wanted ] = v;
 			end
 		end
-		i = 1;
+		local i = 1;
 		-- now turn that information into actual stacks
 		for k,v in pairs( missing ) do
 			if( i<48 ) then

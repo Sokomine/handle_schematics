@@ -138,9 +138,13 @@ build_chest.show_size_data = function( building_name )
 	end
 
 	local size = build_chest.building[ building_name ].size;
+	-- the full path and name of the building is often too long and provides information about the filesystem, which is unsuitable for players
+	local shortened_building_name = building_name;
+	shortened_building_name = string.sub( building_name, string.len( building_name ) + 2 - string.find( string.reverse(building_name), "/", 1, true ));
+
 	-- show which building has been selected
 	return "label[0.3,9.5;Selected building:]"..
-		"label[2.3,9.5;"..minetest.formspec_escape(building_name).."]"..
+		"label[2.3,9.5;"..minetest.formspec_escape(shortened_building_name).."]"..
 		-- size of the building
 		"label[0.3,9.8;Size ( wide x length x height ):]"..
 		"label[4.3,9.8;"..tostring( size.x )..' x '..tostring( size.z )..' x '..tostring( size.y ).."]";
