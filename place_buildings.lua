@@ -1031,14 +1031,55 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 		end
 	end
 
-	if( res.missing_nodes ) then
-		local missing = {};
-		for k,v in pairs( res.missing_nodes ) do
-			missing[ minetest.get_name_from_content_id( k ) ] = v;
+	-- we need to store additional information at the plotmarkers position
+	if( plotmarker_pos ) then
+		local meta = minetest.get_meta( plotmarker_pos );
+		-- how many nodes need to be digged here?
+		meta:set_int( "nodes_to_dig", nodes_to_dig );
+
+		if( not( res.missing_nodes )) then
+			res.missing_nodes = {};
 		end
-		minetest.chat_send_player("singleplayer", "Missing nodes: "..minetest.serialize( missing )); -- TODO (not always singleplayer...)
+		local missing = {};
+		local inv = meta:get_inventory();
+		inv:set_size("needed", 48 );
+		for k,v in pairs( res.missing_nodes ) do
+			local node_wanted = minetest.get_name_from_content_id( k );
+			-- some nodes - like i.e. dirt_with_grass - cannot be obtained by the player directly
+			if(    minetest.registered_nodes[ node_wanted ]
+			   and minetest.registered_nodes[ node_wanted ].drop
+			   and minetest.registered_items[ minetest.registered_nodes[ node_wanted ].drop ]
+			    -- stone, desertstone and clay can be obtained
+			   and not( handle_schematics.direct_instead_of_drop[ node_wanted ])) then
+				node_wanted = minetest.registered_nodes[ node_wanted ].drop;
+			end
+			-- store how many are needed
+			if( missing[ node_wanted ]) then
+				missing[ node_wanted ] = missing[ node_wanted ] + v;
+			elseif( node_wanted ~= "" ) then -- "" may happen with the top of doors etc.
+				missing[ node_wanted ] = v;
+			end
+		end
+		i = 1;
+		-- now turn that information into actual stacks
+		for k,v in pairs( missing ) do
+			if( i<48 ) then
+				local stack = inv:get_stack("needed", i);
+				stack:set_name( k );
+				stack:set_count( v );
+				inv:set_stack( "needed", i, stack );
+				i = i+1;
+			end
+		end
+		-- clear the rest of the inventory
+		while( i< 48 ) do
+			local stack = inv:get_stack("needed", i);
+			stack:set_name( "" );
+			stack:set_count( 0);
+			inv:set_stack( "needed", i, stack );
+			i = i+1;
+		end
 	end
-	minetest.chat_send_player("singleplayer", "You need to dig/remove "..nodes_to_dig.." nodes."); -- TODO (not always singleplayer...)
 end
 
 

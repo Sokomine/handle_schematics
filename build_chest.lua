@@ -409,14 +409,21 @@ build_chest.update_formspec = function( pos, page, player, fields )
 	local backup_file   = meta:get_string('backup');
 	if( backup_file and backup_file ~= "" ) then
 		local is_restore = meta:get_int('is_restore');
+		local nodes_to_dig = meta:get_int( "nodes_to_dig" );
 		if( not(is_restore) or is_restore ~= 1 ) then
-			return formspec.."button[2.5,3;4,0.5;proceed_with_scaffolding;Check project status/update]"..
-				 "button[2.5,4;4,0.5;restore_backup;Restore original landscape]"..
-		                 "button[3,5;3,0.5;show_materials;Show materials used]";
+			return formspec.."button[0.5,3;4,0.5;proceed_with_scaffolding;Check project status/update]"..
+				 "button[0.5,4;4,0.5;restore_backup;Restore original landscape]"..
+		                 "button[1,5;3,0.5;show_materials;Show materials used]"..
+				 "label[5,2.5;Materails needed to complete project:]"..
+				 "label[5,9;"..nodes_to_dig.." blocks need to be digged/removed]"..
+				 "list[current_name;needed;5,3;8,6;]";
 		else
-			return formspec.."button[2,3;5,0.5;restore_backup;Check landscape restauration state/update]"..
-				 "button[2,4;5,0.5;proceed_with_scaffolding;Switch back to planned project]"..
-		                 "button[3,5;3,0.5;show_materials;Show materials used]";
+			return formspec.."button[0,3;5,0.5;restore_backup;Check landscape restauration state/update]"..
+				 "button[0,4;5,0.5;proceed_with_scaffolding;Switch back to planned project]"..
+		                 "button[1,5;3,0.5;show_materials;Show materials used]"..
+				 "label[5,2.5;Materails needed to complete project:]"..
+				 "label[5,9;"..nodes_to_dig.." blocks need to be digged/removed]"..
+				 "list[current_name;needed;5,3;8,6;]";
 		end
 	end
 
