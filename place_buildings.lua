@@ -554,7 +554,10 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 			if (ax >= minp.x and ax <= maxp.x) and (ay >= minp.y and ay <= maxp.y) and (az >= minp.z and az <= maxp.z) then
 	
 				local new_content = c_air;
-				local t = scm[y+1][xoff][zoff];
+				local t = cid.c_ignore;
+				if( scm and scm[y+1] and scm[y+1][xoff] ) then
+					t = scm[y+1][xoff][zoff];
+				end
 				local node_content = data[a:index(ax, ay, az)];
 
 				if( binfo.yoff+y == 0 ) then

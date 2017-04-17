@@ -110,18 +110,45 @@ read_tag = function( data_stream, title_tag )
 		local tag_name        = string.sub( data_stream, curr_index, curr_index+tag_name_length-1 );
 		-- move on...
 		curr_index = curr_index + tag_name_length;
-		--print('[analyze_mc_schematic_file] Found: Tag '..tostring( tag )..' <'..tostring( tag_name )..'>'); 
 		local res = read_one_tag( data_stream, tag, tag_name );
+
+		--if( tag_name ~= "pos" and tag_name ~= "state" ) then
+		--	print('[analyze_mc_schematic_file] Found: Tag '..tostring( tag )..' <'..tostring( tag_name )..'> '..minetest.serialize( res ));
+		--end
+
 		-- Entities and TileEntities are ignored
-		if( title_tag == 'Schematic'
-		   and( tag_name == 'Width'
-		     or tag_name == 'Height'
-		     or tag_name == 'Length'
-		     or tag_name == 'Materials' -- "Classic" or "Alpha" (=Survival)
-		     or tag_name == 'Blocks'
-		     or tag_name == 'Data'
-		)) then
-			mc_schematic_data[ tag_name ] = res;
+		-- this is for the .schematic format
+		if( title_tag == 'Schematic' ) then
+			if(( tag_name == 'Width'
+			     or tag_name == 'Height'
+			     or tag_name == 'Length'
+			     or tag_name == 'Materials' -- "Classic" or "Alpha" (=Survival)
+			     or tag_name == 'Blocks'
+			     or tag_name == 'Data'
+			)) then
+				mc_schematic_data[ tag_name ] = res;
+			end
+
+		-- ..and this for .nbt
+		elseif( tag_name == 'size' and res and res[1] and res[2] and res[3]) then
+			schematic_data.Width  = res[1]; -- TODO: no idea if the dimensions are truely arranged like this
+			schematic_data.Height = res[2];
+			schematic_data.Length = res[3];
+			schematic_data.Data      = {};
+			schematic_data.Materials = {};
+			schematic_data.Blocks    = {};
+		elseif( title_tag == 'blocks' and tag_name == 'pos' ) then
+			schematic_data.last_pos = pos;
+		elseif( title_tag == 'blocks' and tag_name == 'state' ) then
+			schematic_data.last_state = state;
+		end
+
+		if( schematic_data.last_pos and schematic_data.last_state ) then
+			local p = schematic_data.last_pos;
+			local size = {x=schematic_data.Width, y=schematic_data.Height, z=schematic_data.Length};
+			mc_schematic_data.Blocks[ ((p[2]-1)*size.z + (p[3]-1) )*size.x + (size.x-p[4]) +1] = schematic_data.last_state;
+			schematic_data.last_pos   = nil;
+			schematic_data.last_state = nil;
 		end
 	end
 	return;
@@ -142,10 +169,10 @@ handle_schematics.analyze_mc_schematic_file = function( path )
 	end
 
 	local compressed_data = file:read( "*all" );
-	--local data_string = minetest.decompress(compressed_data, "deflate" );
-local data_string = compressed_data; -- TODO
-print('FILE SIZE: '..tostring( string.len( data_string ))); -- TODO
 	file.close(file)
+	--print('FILE SIZE: '..tostring( string.len( compressed_data )));
+	--local data_string = minetest.decompress(compressed_data, "deflate" );
+	local data_string = compressed_data; -- TODO
 
 
 	-- we use this (to this file) global variable to store gathered information;

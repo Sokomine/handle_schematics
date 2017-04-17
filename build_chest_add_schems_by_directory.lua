@@ -13,7 +13,12 @@ local build_chest_add_files_to_menu_from_directory = function( schem, path, entr
 			if( i ) then
 				schemname = string.sub( schem, 1, i-1 );
 			else
-				return;
+				i = string.find( schem, '.schematic', -10 );
+				if( i ) then
+					schemname = string.sub( schem, 1, i-1 );
+				else
+					return;
+				end
 			end
 		end
 	end
