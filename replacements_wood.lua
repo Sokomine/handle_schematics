@@ -87,8 +87,8 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 		-- normal wood does have a number of nodes which might get replaced by more specialized wood types
 		if( mod_prefix=='default:' and v=='' ) then
 			local w = 'wood';
-			data[10] = 'cottages:gate_open';
-			data[11] = 'cottages:gate_closed';
+			data[10] = 'doors:gate_wood_open';
+			data[11] = 'doors:gate_wood_closed';
 			data[12] = 'default:ladder';
 			data[13] = 'doors:door_'..w..'_t_1';
 			data[14] = 'doors:door_'..w..'_t_2';
@@ -164,13 +164,13 @@ replacements_group['wood'].construct_wood_type_list = function()
 	-- https://github.com/minetest/minetest_game
 	-- default tree and jungletree; no gates available
 	replacements_group['wood'].add_material( {'', 'jungle' },     'default:', '','wood','', 'tree',  '','leaves',  '','sapling',
-		'stairs:stair_', 'wood', 'stairs:slab_', 'wood',   'default:fence_','wood',  'NONE', '' );
+		'stairs:stair_', 'wood', 'stairs:slab_', 'wood',   'default:fence_','wood',  'doors:gate_', 'wood' );
 	-- default:pine_needles instead of leaves; no gates available
 	replacements_group['wood'].add_material( {'pine' },           'default:', '','_wood','', '_tree',  '','_needles','','_sapling',
-		'stairs:stair_', 'wood', 'stairs:slab_', 'wood',   'default:fence_','_wood',  'NONE','' );
+		'stairs:stair_', 'wood', 'stairs:slab_', 'wood',   'default:fence_','_wood',  'doors:gate_','_wood' );
 	-- acacia and aspen
 	replacements_group['wood'].add_material( {'acacia', 'aspen'},  'default:', '','_wood','', '_tree',  '','_leaves',  '','_sapling',
-		'stairs:stair_', '_wood', 'stairs:slab_', '_wood',   'default:fence_','_wood',  'NONE', '' );
+		'stairs:stair_', '_wood', 'stairs:slab_', '_wood',   'default:fence_','_wood',  'doors:gate_', '_wood' );
 
 	-- https://github.com/Novatux/mg
 	-- trees from nores mapgen
