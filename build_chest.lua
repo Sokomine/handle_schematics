@@ -412,16 +412,37 @@ build_chest.update_formspec = function( pos, page, player, fields )
 	-- the building has been placed; offer to restore a backup
 	local backup_file   = meta:get_string('backup');
 	if( backup_file and backup_file ~= "" ) then
+
 		local is_restore = meta:get_int('is_restore');
 		local nodes_to_dig = meta:get_int( "nodes_to_dig" );
 		if( fields.abort_project ) then
 			return formspec.."label[0,3;Abort this project and select a new one?]"..
 				"button[0,4;1.5,0.5;yes_abort_project;Yes]"..
 				"button[3,4;1.5,0.5;no_abort;No]";
+		elseif( fields.save_file_as ) then
+			local shortened_building_name = building_name;
+			shortened_building_name = string.sub( building_name, string.len( building_name ) + 2 - string.find( string.reverse(building_name), "/", 1, true ));
+
+			local start_pos     = minetest.deserialize( meta:get_string('start_pos'));
+			local end_pos       = minetest.deserialize( meta:get_string('end_pos'));
+			-- how deep the building is burried will also become part of the new filename
+			local burried = (start_pos.y - pos.y);
+			-- the "burried" value will be applied later
+			start_pos.y = pos.y;
+
+			return formspec.."label[0,3;Save the current building as..]"..
+				"field[40,40;0.1,0.1;save_as_p1;;"..minetest.pos_to_string(start_pos).."]"..
+				"field[40,40;0.1,0.1;save_as_p2;;"..minetest.pos_to_string(end_pos).."]"..
+				"field[40,40;0.1,0.1;save_as_yoff;;"..burried.."]"..
+				"label[0,3.5;New filename:]"..
+					"field[4,4;4,0.5;save_as_filename;;"..shortened_building_name.."]"..
+				"button[4,5;1.5,0.5;no_abort;Abort]"..
+				"button[6,5;1.5,0.5;save_as;Save]";
 		elseif( not(is_restore) or is_restore ~= 1 ) then
 			return formspec.."button[0.5,3;4,0.5;proceed_with_scaffolding;Check project status/update]"..
-				 "button[0.5,4;4,0.5;restore_backup;Restore original landscape]"..
+				 "button[0.5,4;4,0;restore_backup;Restore original landscape]"..
 		                 "button[1,5;3,0.5;show_materials;Show materials used]"..
+		                 "button[0.5,8.5;4,0.5;save_file_as;Save current building as..]"..
 				 "label[5,2.5;Materails needed to complete project:]"..
 				 "label[5,9;"..nodes_to_dig.." blocks need to be digged/removed]"..
 				 "list[current_name;needed;5,3;8,6;]";
@@ -430,6 +451,7 @@ build_chest.update_formspec = function( pos, page, player, fields )
 				 "button[0,4;5,0.5;proceed_with_scaffolding;Switch back to planned project]"..
 		                 "button[1,5;3,0.5;show_materials;Show materials used]"..
 		                 "button[0,6;5,0.5;abort_project;Abort this project and select new]"..
+		                 "button[0.5,8.5;4,0.5;save_file_as;Save current building as..]"..
 				 "label[5,2.5;Materails needed to complete project:]"..
 				 "label[5,9;"..nodes_to_dig.." blocks need to be digged/removed]"..
 				 "list[current_name;needed;5,3;8,6;]";
@@ -864,7 +886,7 @@ mirror = nil;
 				filename = pname..'_'..tostring( p1 )..'_'..tostring(p2);
 			end
 
-			-- param2 needs to be translated init initial rotation as well
+			-- param2 needs to be translated inio initial rotation as well
 			local node = minetest.get_node( pos );
 			if(     node.param2 == 0 ) then
 				filename = filename..'_'..burried..'_90';
@@ -893,8 +915,14 @@ mirror = nil;
 			if( not( worldnameparts ) or #worldnameparts < 1 ) then
 				worldnameparts = {'unkown world'};
 			end
-			build_chest.add_entry(    {'main','worlds', worldnameparts[ #worldnameparts], 'schems', filename, worldpath..'/schems/'..filename});
+			local new_path = {'main','worlds', worldnameparts[ #worldnameparts], 'schems', filename, worldpath..'/schems/'..filename};
+			build_chest.add_entry( new_path );
 			build_chest.add_building( worldpath..'/schems/'..filename, {scm=filename, typ='nn'});
+
+			meta:set_string( 'current_path',  minetest.serialize( new_path ));
+			meta:set_string( 'building_name', worldpath..'/schems/'..filename);
+			meta:set_int(    'replace_row', 0 );
+			meta:set_int(    'page_nr',     0 );
 
 			minetest.chat_send_player( pname,
 				'Created schematic \''..tostring( filename )..'\'. Saved area from '..
