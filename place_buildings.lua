@@ -333,6 +333,15 @@ local function generate_building_what_to_place_here_and_how(t, node_content, new
 		new_content = cid.c_air;
 	end
 
+	-- quite often we just need some kind of floor/ground - and do not depend on a particular node
+	if(   handle_schematics.also_acceptable
+	  and new_content ~= cid.c_ignore and node_content ~= cid.c_ignore
+	  and handle_schematics.also_acceptable[ new_content ]
+	  and handle_schematics.also_acceptable[ new_content ].is_ok
+	  and handle_schematics.also_acceptable[ new_content ].is_ok[ node_content ]) then
+		new_content = node_content;
+	end
+
 	-- the old torch is split up into three new types
 	if( n.is_torch ) then
 		if( t[2]==0 ) then
