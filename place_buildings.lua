@@ -1049,6 +1049,7 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 		-- how many nodes need to be digged here?
 		meta:set_int( "nodes_to_dig", nodes_to_dig );
 
+		local nodes_to_place = 0;
 		if( not( res.missing_nodes )) then
 			res.missing_nodes = {};
 		end
@@ -1080,6 +1081,7 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 				stack:set_name( k );
 				stack:set_count( v );
 				inv:set_stack( "needed", i, stack );
+				nodes_to_place = nodes_to_place + v;
 				i = i+1;
 			end
 		end
@@ -1091,6 +1093,7 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 			inv:set_stack( "needed", i, stack );
 			i = i+1;
 		end
+		meta:set_int( "nodes_to_place", nodes_to_place );
 	end
 end
 
