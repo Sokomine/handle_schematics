@@ -362,7 +362,7 @@ local function generate_building_what_to_place_here_and_how(t, node_content, new
 
 	-- glasslike nodes need to have param2 set to 0 (else they get a strange fill state)
 	if( n.set_param2_to_0 ) then
-		p2 = 0;
+		param2 = 0;
 	end
 
 	return { new_content = new_content, new_param2 = param2, n = n };
