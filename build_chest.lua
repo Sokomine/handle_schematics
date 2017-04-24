@@ -151,6 +151,19 @@ build_chest.show_size_data = function( building_name )
 end
 
 
+-- abort a building project - remove all dig_here-indicators and special scaffolding nodes
+handle_schematics.abort_project_remove_indicators = function( meta )
+	local start_pos     = minetest.deserialize( meta:get_string('start_pos'));
+	local end_pos       = minetest.deserialize( meta:get_string('end_pos'));
+	-- find automaticly placed dig-here-indicators and scaffolding nodes
+	if( start_pos and end_pos and start_pos.x and end_pos.x) then
+		local nodes = minetest.find_nodes_in_area( start_pos, end_pos, {"handle_schematics:dig_here", "handle_schematics:support_setup"});
+		for i,v in ipairs( nodes ) do
+			minetest.set_node( v, { name = "air", param2 = 0 });
+		end
+	end
+end
+
 -- helper function for update_formspec that handles saving of a building
 handle_schematics.update_formspec_save_building = function( formspec, meta, player, fields, pos )
 	local saved_as_filename = meta:get_string('saved_as_filename');
@@ -782,15 +795,7 @@ mirror = nil;
 
 	-- there has to be a way to abort a project and select another building/project elseif( fields.yes_abort_project ) then
 	elseif( fields.yes_abort_project ) then
-		local start_pos     = minetest.deserialize( meta:get_string('start_pos'));
-		local end_pos       = minetest.deserialize( meta:get_string('end_pos'));
-		-- find automaticly placed dig-here-indicators and scaffolding nodes
-		if( start_pos and end_pos and start_pos.x and end_pos.x) then
-			local nodes = minetest.find_nodes_in_area( start_pos, end_pos, {"handle_schematics:dig_here", "handle_schematics:support_setup"});
-			for i,v in ipairs( nodes ) do
-				minetest.set_node( v, { name = "air", param2 = 0 });
-			end
-		end
+		handle_schematics.abort_project_remove_indicators( meta );
 
 		-- without existing backup it is possible to switch back in the menu
 		meta:set_string('backup', nil );
