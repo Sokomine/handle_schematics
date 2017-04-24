@@ -71,9 +71,16 @@ minetest.register_node("handle_schematics:support_setup", {
 
 						if(not( clicker:get_inventory():contains_item("main", node_really_wanted ))) then
 							if( clicker:is_player()) then
+								local descr = "-?-";
+								if( minetest.registered_items[ node_really_wanted ] ) then
+									descr = minetest.registered_items[ node_really_wanted ].description;
+									if( not( descr )) then
+										descr = minetest.registered_items[ node_really_wanted ].name;
+									end
+								end
+
 								minetest.chat_send_player( clicker:get_player_name(),
-									"You have no "..( minetest.registered_nodes[ node_really_wanted ].description or "such node")..
-									" ["..node_really_wanted.."].");
+									"You have no "..( descr or "such node").." ["..node_really_wanted.."].");
 							end
 							return itemstack;
 						end
