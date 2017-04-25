@@ -458,7 +458,7 @@ build_chest.update_formspec = function( pos, page, player, fields )
 		                 "button[0.5,8.5;4,0.5;save_file_as;Save current building as..]"..
 				 "label[5,2.5;Materails needed to complete project:]"..
 				 "label[5,9;"..nodes_to_dig.." blocks need to be digged/removed]"..
-				 "list[current_name;needed;5,3;8,6;]";
+				 "list[nodemeta:"..pos.x..","..pos.y..","..pos.z..";needed;5,3;8,6;]";
 		else
 			return formspec.."button[0,3;5,0.5;restore_backup;Check landscape restauration state/update]"..
 				 "button[0,4;5,0.5;proceed_with_scaffolding;Switch back to planned project]"..
@@ -467,7 +467,7 @@ build_chest.update_formspec = function( pos, page, player, fields )
 		                 "button[0.5,8.5;4,0.5;save_file_as;Save current building as..]"..
 				 "label[5,2.5;Materails needed to complete project:]"..
 				 "label[5,9;"..nodes_to_dig.." blocks need to be digged/removed]"..
-				 "list[current_name;needed;5,3;8,6;]";
+				 "list[nodemeta:"..pos.x..","..pos.y..","..pos.z..";needed;5,3;8,6;]";
 		end
 	end
 
@@ -1038,7 +1038,6 @@ minetest.register_node("handle_schematics:build", { --TODO
         on_metadata_inventory_put = function(pos, listname, index, stack, player)
             return build_chest.on_metadata_inventory_put( pos, listname, index, stack, player );
         end,
-
 })
 
 
