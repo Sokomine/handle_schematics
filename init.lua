@@ -3,15 +3,6 @@ handle_schematics = {}
 
 handle_schematics.modpath = minetest.get_modpath( "handle_schematics");
 
--- if the player builds a house manually, there are some nodes the players cannot
--- supply as the nodes are not obtainable (only their drop) - thus, in most cases,
--- the drop is what we ask for; except for these nodes where the origianl node
--- can be obtained through smelting/crafting:
-handle_schematics.direct_instead_of_drop = {};
-handle_schematics.direct_instead_of_drop[ "default:stone" ] = true;
-handle_schematics.direct_instead_of_drop[ "default:desert_stone" ] = true;
-handle_schematics.direct_instead_of_drop[ "default:desert_clay" ] = true;
-
 -- adds worldedit_file.* namespace
 -- deserialize worldedit savefiles
 dofile(handle_schematics.modpath.."/worldedit_file.lua")
@@ -57,6 +48,11 @@ dofile(handle_schematics.modpath.."/dirt_is_not_always_dirt.lua")
 -- actually enable it (if you do not want this function just set
 -- handle_schematics.also_acceptable = {}  somewhere in your code
 handle_schematics.enable_use_dirt_as_placeholder();
+
+-- apart from dirt_with_grass, some other nodes may not be obtainable without
+-- creative because their drop is diffrent from their node name (i.e grass,
+-- farming, doors, ..)
+dofile(handle_schematics.modpath.."/player_can_provide.lua")
 
 -- uses build_chest.* namespace
 -- a chest for spawning buildings manually

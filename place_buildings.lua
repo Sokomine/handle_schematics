@@ -1059,13 +1059,7 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 		for k,v in pairs( res.missing_nodes ) do
 			local node_wanted = minetest.get_name_from_content_id( k );
 			-- some nodes - like i.e. dirt_with_grass - cannot be obtained by the player directly
-			if(    minetest.registered_nodes[ node_wanted ]
-			   and minetest.registered_nodes[ node_wanted ].drop
-			   and minetest.registered_items[ minetest.registered_nodes[ node_wanted ].drop ]
-			    -- stone, desertstone and clay can be obtained
-			   and not( handle_schematics.direct_instead_of_drop[ node_wanted ])) then
-				node_wanted = minetest.registered_nodes[ node_wanted ].drop;
-			end
+			node_wanted = handle_schematics.get_what_player_can_provide( node_wanted );
 			-- store how many are needed
 			if( missing[ node_wanted ]) then
 				missing[ node_wanted ] = missing[ node_wanted ] + v;
