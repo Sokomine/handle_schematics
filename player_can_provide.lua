@@ -24,6 +24,9 @@ end
 for i=1,8 do
 	handle_schematics.player_can_provide[ "farming:cotton_"..i ] = "farming:seed_cotton";
 end
+handle_schematics.player_can_provide[ "default:water_source" ] = "bucket:bucket_water";
+handle_schematics.player_can_provide[ "default:river_water_source" ] = "bucket:bucket_river_water";
+handle_schematics.player_can_provide[ "default:lava_source" ] = "bucket:bucket_lava";
 
 -- makes use of handle_schematics.player_can_provide; but also takes
 -- the drop into account (for i.e. doors or other open/closed nodes)
