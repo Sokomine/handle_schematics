@@ -30,6 +30,68 @@ minetest.register_craft({
         }
 })
 
+
+-- always handle the bottommost support node first
+handle_schematics.place_node_using_support_setup = function(pos, node, clicker, itemstack, pointed_thing )
+	if not( default.can_interact_with_node(clicker, pos)) then
+		return itemstack;
+	end
+
+	-- pass right-clicks on to support nodes below (else some floor nodes may not be reachable)
+	local node_below = minetest.get_node( {x=pos.x, y=pos.y-1, z=pos.z} );
+	if( node_below and node_below.name and node_below.name == "handle_schematics:support_setup" ) then
+		return handle_schematics.place_node_using_support_setup({x=pos.x, y=pos.y-1, z=pos.z}, node_below, clicker, itemstack, pointed_thing );
+	end
+
+	local meta = minetest.get_meta( pos );
+	local node_wanted = meta:get_string( "node_wanted" );
+	local param2_wanted = meta:get_int( "param2_wanted" );
+
+	if( not(meta) or not(node_wanted) or node_wanted == "" or not(clicker)) then
+		return itemstack;
+	end
+
+	if( not(clicker) or not(clicker.get_inventory)) then
+		return itemstack;
+	end
+
+	local node_really_wanted = node_wanted;
+
+	-- some nodes like i.e. dirt with grass or stone with coal cannot be obtained;
+	-- in such a case we ask for the drop
+	node_really_wanted = handle_schematics.get_what_player_can_provide( node_wanted );
+
+	if(not( clicker:get_inventory():contains_item("main", node_really_wanted ))) then
+		if( clicker:is_player()) then
+			local descr = "-?-";
+			if( minetest.registered_items[ node_really_wanted ] ) then
+				descr = minetest.registered_items[ node_really_wanted ].description;
+				if( not( descr )) then
+					descr = minetest.registered_items[ node_really_wanted ].name;
+				end
+			end
+
+			minetest.chat_send_player( clicker:get_player_name(),
+				"You have no "..( descr or "such node").." ["..node_really_wanted.."].");
+		end
+		return itemstack;
+	end
+	-- give the player some feedback (might scroll a bit..)
+	if( clicker:is_player()
+	   and minetest.registered_nodes[ node_really_wanted ]
+	   and minetest.registered_nodes[ node_really_wanted ].description) then
+		minetest.chat_send_player( clicker:get_player_name(),
+			"Placed "..( minetest.registered_nodes[ node_really_wanted ].description or node_really_wanted)..".");
+	end
+	-- take the item from the player (provided it actually is a player and not a mob)
+	clicker:get_inventory():remove_item("main", node_really_wanted);
+
+	minetest.env:add_node( pos, { name =  node_wanted, param1 = 0, param2 = param2_wanted } );
+
+	return itemstack;
+end
+
+
 -- this node will only be placed by spawning a house with handle_schematics
 minetest.register_node("handle_schematics:support_setup", {
         description = "support structure for buildings (configured)",
@@ -46,52 +108,7 @@ minetest.register_node("handle_schematics:support_setup", {
 	-- note: mobs that want to use this function ought to provide "clicker" in a way so that clicker:get_inventory
 	--       can get used (at least if they want to have a limited inventory)
 	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
-				if default.can_interact_with_node(clicker, pos) then
-					local meta = minetest.get_meta( pos );
-					local node_wanted = meta:get_string( "node_wanted" );
-					local param2_wanted = meta:get_int( "param2_wanted" );
-
-					if( not(meta) or not(node_wanted) or node_wanted == "" or not(clicker)) then
-						return itemstack;
-					end
-
-					if( clicker and clicker.get_inventory) then
-						local node_really_wanted = node_wanted;
-
-						-- some nodes like i.e. dirt with grass or stone with coal cannot be obtained;
-						-- in such a case we ask for the drop
-						node_really_wanted = handle_schematics.get_what_player_can_provide( node_wanted );
-
-						if(not( clicker:get_inventory():contains_item("main", node_really_wanted ))) then
-							if( clicker:is_player()) then
-								local descr = "-?-";
-								if( minetest.registered_items[ node_really_wanted ] ) then
-									descr = minetest.registered_items[ node_really_wanted ].description;
-									if( not( descr )) then
-										descr = minetest.registered_items[ node_really_wanted ].name;
-									end
-								end
-
-								minetest.chat_send_player( clicker:get_player_name(),
-									"You have no "..( descr or "such node").." ["..node_really_wanted.."].");
-							end
-							return itemstack;
-						end
-						-- give the player some feedback (might scroll a bit..)
-						if( clicker:is_player()
-						   and minetest.registered_nodes[ node_really_wanted ]
-						   and minetest.registered_nodes[ node_really_wanted ].description) then
-							minetest.chat_send_player( clicker:get_player_name(),
-								"Placed "..( minetest.registered_nodes[ node_really_wanted ].description or node_really_wanted)..".");
-						end
-						-- take the item from the player (provided it actually is a player and not a mob)
-						clicker:get_inventory():remove_item("main", node_really_wanted);
-					end
-
-					minetest.env:add_node( pos, { name =  node_wanted, param1 = 0, param2 = param2_wanted } );
-
-				end
-				return itemstack;
+				handle_schematics.place_node_using_support_setup(pos, node, clicker, itemstack, pointed_thing );
 			end
 })
 
