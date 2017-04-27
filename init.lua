@@ -41,6 +41,11 @@ dofile(handle_schematics.modpath.."/replacements_roof.lua")
 dofile(handle_schematics.modpath.."/replacements_get_table.lua")
 
 
+-- apart from dirt_with_grass, some other nodes may not be obtainable without
+-- creative because their drop is diffrent from their node name (i.e grass,
+-- farming, doors, ..)
+dofile(handle_schematics.modpath.."/player_can_provide.lua")
+
 -- assume dirt to be a general placeholder for "something you can
 -- walk on"; might be stone, other dirt types etc.; this also
 -- accepts other dirt and sand types for dirt_with_grass
@@ -48,11 +53,9 @@ dofile(handle_schematics.modpath.."/dirt_is_not_always_dirt.lua")
 -- actually enable it (if you do not want this function just set
 -- handle_schematics.also_acceptable = {}  somewhere in your code
 handle_schematics.enable_use_dirt_as_placeholder();
-
--- apart from dirt_with_grass, some other nodes may not be obtainable without
--- creative because their drop is diffrent from their node name (i.e grass,
--- farming, doors, ..)
-dofile(handle_schematics.modpath.."/player_can_provide.lua")
+-- doors have the tendency to come in either "open" or "closed" state - neither
+-- of which ought to make a difference
+handle_schematics.enable_doors_open_closed();
 
 -- uses build_chest.* namespace
 -- a chest for spawning buildings manually
