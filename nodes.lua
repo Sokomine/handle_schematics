@@ -61,7 +61,12 @@ handle_schematics.place_node_using_support_setup = function(pos, node, clicker, 
 	-- in such a case we ask for the drop
 	node_really_wanted = handle_schematics.get_what_player_can_provide( node_wanted );
 
-	if(not( clicker:get_inventory():contains_item("main", node_really_wanted ))) then
+	-- the player might be wielding the requested item
+	if( itemstack and itemstack:get_name() and itemstack:get_name()==node_really_wanted and itemstack:get_count()>0 ) then
+		itemstack:take_item();
+
+	-- ...or it might be found elsewhere in the player's inventory
+	elseif(not( clicker:get_inventory():contains_item("main", node_really_wanted ))) then
 		if( clicker:is_player()) then
 			local descr = "-?-";
 			if( minetest.registered_items[ node_really_wanted ] ) then
@@ -84,9 +89,10 @@ handle_schematics.place_node_using_support_setup = function(pos, node, clicker, 
 			"Placed "..( minetest.registered_nodes[ node_really_wanted ].description or node_really_wanted)..".");
 	end
 	-- take the item from the player (provided it actually is a player and not a mob)
-	clicker:get_inventory():remove_item("main", node_really_wanted);
+	clicker:get_inventory():remove_item("main", node_really_wanted.." 1");
 
-	minetest.env:add_node( pos, { name =  node_wanted, param1 = 0, param2 = param2_wanted } );
+	minetest.remove_node( pos );
+	minetest.set_node( pos, { name =  node_wanted, param1 = 0, param2 = param2_wanted } );
 
 	return itemstack;
 end
