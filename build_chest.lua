@@ -81,12 +81,14 @@ end
 
 
 
-build_chest.get_start_pos = function( pos )
+build_chest.get_start_pos = function( pos, building_name, param2 )
 	-- rotate the building so that it faces the player
 	local node = minetest.get_node( pos );
 	local meta = minetest.get_meta( pos );
 
-	local building_name = meta:get_string( 'building_name' );
+	if( not( building_name )) then
+		building_name = meta:get_string( 'building_name' );
+	end
 	if( not( building_name )) then
 		return "No building_name provided.";
 	end
@@ -109,8 +111,11 @@ build_chest.get_start_pos = function( pos )
 		start_pos.y = start_pos.y + selected_building.yoff -1;
 	end
 	
+	if( param2 == nil ) then
+		param2 = node.param2;
+	end
 	-- make sure the building always extends forward and to the right of the player
-	local param2_rotated = handle_schematics.translate_param2_to_rotation( node.param2, mirror, start_pos,
+	local param2_rotated = handle_schematics.translate_param2_to_rotation( param2, mirror, start_pos,
 				selected_building.size, selected_building.rotated, selected_building.burried, selected_building.orients,
 				selected_building.yoff );
 
@@ -526,7 +531,7 @@ build_chest.update_formspec = function( pos, page, player, fields )
 	if( #options == 1 and options[1] and build_chest.building[ options[1]] ) then
 		-- a building has been selected
 		meta:set_string( 'building_name', options[1] );
-		local start_pos = build_chest.get_start_pos( pos );
+		local start_pos = build_chest.get_start_pos( pos, nil, nil );
 		if( type(start_pos)=='table' and start_pos and start_pos.x and build_chest.building[ options[1]].size) then
 			-- size information has just been read; we can now display it
 			formspec = formspec..build_chest.show_size_data( building_name );
