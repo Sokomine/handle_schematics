@@ -204,8 +204,11 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			end
 
 			local new_content = new_nodes[ i ].new_content;
-			if( new_content == cid.c_dirt or new_content == cid.c_dirt_with_grass ) then
+			if(     new_content == cid.c_dirt_with_grass ) then
 				new_nodes[ i ].is_grass     = 1;
+			-- dirt acts as a general placeholder
+			elseif( new_content == cid.c_dirt ) then
+				new_nodes[ i ].is_dirt      = 1;
 		
 			elseif( new_content == cid.c_sapling
 			     or new_content == cid.c_jsapling
@@ -320,6 +323,8 @@ local function generate_building_what_to_place_here_and_how(t, node_content, new
 	-- replace all dirt and dirt with grass at that x,z coordinate with the stored ground grass node;
 	if( n.is_grass and keep_ground and ground_type) then
 		new_content = ground_type;
+	elseif( n.is_dirt and node_content ~= cid.c_air ) then
+		new_content = node_content;
 	end
 
 	-- do not overwrite plotmarkers
