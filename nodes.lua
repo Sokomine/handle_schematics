@@ -51,10 +51,6 @@ handle_schematics.place_node_using_support_setup = function(pos, node, clicker, 
 		return itemstack;
 	end
 
-	if( not(clicker) or not(clicker.get_inventory)) then
-		return itemstack;
-	end
-
 	local node_really_wanted = node_wanted;
 
 	-- some nodes like i.e. dirt with grass or stone with coal cannot be obtained;
@@ -64,6 +60,10 @@ handle_schematics.place_node_using_support_setup = function(pos, node, clicker, 
 	-- the player might be wielding the requested item
 	if( itemstack and itemstack:get_name() and itemstack:get_name()==node_really_wanted and itemstack:get_count()>0 ) then
 		itemstack:take_item();
+
+	-- clicker does not have an inventory; it might be a mob
+	elseif( not( clicker.get_inventory )) then
+		return itemstack;
 
 	-- ...or it might be found elsewhere in the player's inventory
 	elseif(not( clicker:get_inventory():contains_item("main", node_really_wanted ))) then
@@ -89,7 +89,9 @@ handle_schematics.place_node_using_support_setup = function(pos, node, clicker, 
 			"Placed "..( minetest.registered_nodes[ node_really_wanted ].description or node_really_wanted)..".");
 	end
 	-- take the item from the player (provided it actually is a player and not a mob)
-	clicker:get_inventory():remove_item("main", node_really_wanted.." 1");
+	if( clicker.get_inventory ) then
+		clicker:get_inventory():remove_item("main", node_really_wanted.." 1");
+	end
 
 	minetest.remove_node( pos );
 	minetest.set_node( pos, { name =  node_wanted, param1 = 0, param2 = param2_wanted } );
