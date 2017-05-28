@@ -100,6 +100,51 @@ handle_schematics.place_node_using_support_setup = function(pos, node, clicker, 
 end
 
 
+-- right-clicking a dig_here-indicator ought to dig the next node below it that needs digging and place appropriate scaffolding
+handle_schematics.dig_node_indicator_clicked = function(pos, node, clicker, itemstack, pointed_thing )
+	if not( default.can_interact_with_node(clicker, pos)) then
+		return itemstack;
+	end
+
+	local meta = minetest.get_meta( pos );
+	local nodes_wanted_str = meta:get_string( "node_wanted_down_there");
+	if( not( nodes_wanted_str )) then
+		return itemstack;
+	end
+	local nodes_wanted = minetest.deserialize( nodes_wanted_str );
+
+	for i=1,table.getn( nodes_wanted ) do
+		local p = {x=pos.x, y=pos.y-i, z=pos.z};
+		local node = minetest.get_node( p );
+		-- found a node that is not yet scaffolding
+		if( node and node.name and (node.name ~= "handle_schematics:support_setup" and node.name ~= "air")) then
+			for j,v in ipairs( nodes_wanted ) do
+				-- get the entry at the right position
+				if( v and v[1] == p.y ) then
+					-- dig the old node and add it to the inventory
+					minetest.node_dig(p, node, clicker);
+					if( v[2] ~= minetest.get_content_id("air")) then
+						-- place the scaffolding node
+						minetest.set_node( p, {name="handle_schematics:support_setup"});
+						-- configure the scaffolding node
+						handle_schematics.setup_scaffolding( { x=p.x, y=p.y, z=p.z, node_wanted=v[2], param2_wanted=v[3] });
+						-- we are done
+					end
+					-- TODO: if the digged node is the first that is to go into this itemstack it won't end up in the player's inventory
+					return itemstack;
+				end
+			end
+		end
+	end
+
+	-- we are done; the dig_here-indicator can be removed
+	minetest.set_node( pos, {name="air"});
+	return itemstack;
+end
+
+
+
+
 -- this node will only be placed by spawning a house with handle_schematics
 minetest.register_node("handle_schematics:support_setup", {
         description = "support structure for buildings (configured)",
@@ -141,5 +186,8 @@ minetest.register_node("handle_schematics:dig_here", {
                 type = "fixed",
                 fixed = {-2 / 16, -0.5, -2 / 16, 2 / 16, 6 / 16, 2 / 16}
         },
+	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
+				handle_schematics.dig_node_indicator_clicked(pos, node, clicker, itemstack, pointed_thing );
+			end
 
 })

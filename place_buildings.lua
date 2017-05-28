@@ -618,7 +618,14 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 							local node_here = data[ a:index(ax, h, az)];
 							if( node_here == cid.c_air or node_here == c_dig_here or node_here == c_scaffolding or node_here == c_scaffolding_empty ) then
 								if( data[ a:index(ax, h, az)] ~= c_dig_here ) then
-									table.insert( extra_calls.scaffolding, {x=ax, y=h, z=az, dig_down = h-ay});
+									table.insert( extra_calls.scaffolding, {x=ax, y=h, z=az, dig_down = h-ay, what_where = {{ ay, new_content, param2}}});
+								else
+									-- store which node needs to be placed at which height
+									for i,v in ipairs( extra_calls.scaffolding ) do
+										if( v.x==ax and v.y==h and v.z==az ) then
+											table.insert( v.what_where, { ay, new_content, param2});
+										end
+									end
 								end
 								data[ a:index(ax, h, az)] = c_dig_here;
 								-- how much is to be digged is counted later on (when evaluating extra_calls.scaffolding)
@@ -904,6 +911,32 @@ end
 
 
 
+-- helper function for handle_schematics.place_building_from_file; also used
+-- when digging below a dig_here indicator
+handle_schematics.setup_scaffolding = function( v )
+
+	local node_name = minetest.get_name_from_content_id(v.node_wanted);
+	local descr = tostring(node_name);
+	if( node_name and minetest.registered_nodes[ node_name ] ) then
+		if(     minetest.registered_nodes[ node_name ].drop
+		    -- the drop can be a craftitem
+		    and minetest.registered_items[ minetest.registered_nodes[ node_name ].drop ]
+		    and not( handle_schematics.direct_instead_of_drop[ node_name ])) then
+			descr =  minetest.registered_items[ minetest.registered_nodes[ node_name ].drop ].description;
+		elseif( minetest.registered_nodes[ node_name ].description ) then
+			descr =  minetest.registered_nodes[ node_name ].description;
+		else
+			descr = "- ? -";
+		end
+	end
+
+	local meta = minetest.get_meta( v );
+	meta:set_string( "node_wanted", node_name );
+	meta:set_int(  "param2_wanted", v.param2_wanted );
+	meta:set_string( "infotext", "Needed: "..descr );
+end
+
+
 -- places a building read from file "building_name" on the map between start_pos and end_pos using luavoxelmanip
 -- returns error message on failure and nil on success
 handle_schematics.place_building_from_file = function( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, keep_ground, scaffolding_only, plotmarker_pos )
@@ -1013,25 +1046,8 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 	for k, v in pairs( res.extra_calls.scaffolding ) do
 
 		if( v.node_wanted) then
-			local node_name = minetest.get_name_from_content_id(v.node_wanted);
-			local descr = tostring(node_name);
-			if( node_name and minetest.registered_nodes[ node_name ] ) then
-				if(     minetest.registered_nodes[ node_name ].drop
-				    -- the drop can be a craftitem
-				    and minetest.registered_items[ minetest.registered_nodes[ node_name ].drop ]
-				    and not( handle_schematics.direct_instead_of_drop[ node_name ])) then
-					descr =  minetest.registered_items[ minetest.registered_nodes[ node_name ].drop ].description;
-				elseif( minetest.registered_nodes[ node_name ].description ) then
-					descr =  minetest.registered_nodes[ node_name ].description;
-				else
-					descr = "- ? -";
-				end
-			end
+			handle_schematics.setup_scaffolding( v );
 
-			local meta = minetest.get_meta( v );
-			meta:set_string( "node_wanted", node_name );
-			meta:set_int(  "param2_wanted", v.param2_wanted );
-			meta:set_string( "infotext", "Needed: "..descr );
 		elseif( v.dig_down ) then
 			local meta = minetest.get_meta( v );
 			if( v.dig_down > 1 ) then
@@ -1039,6 +1055,9 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 			else
 				meta:set_string( "infotext", "Dig the block below.");
 			end
+			meta:set_string( "dig_down", v.dig_down );
+			-- structure of what_where = { pos_y, new_content, param2}}
+			meta:set_string( "node_wanted_down_there", minetest.serialize( v.what_where ));
 			-- store the position of the build chest so that npc can locate it more easily
 			if( plotmarker_pos ) then
 				meta:set_string( "chest_pos", minetest.pos_to_string( plotmarker_pos, 0 ));
