@@ -32,7 +32,9 @@ minetest.register_craft({
 
 
 -- always handle the bottommost support node first
-handle_schematics.place_node_using_support_setup = function(pos, node, clicker, itemstack, pointed_thing )
+-- mobs who wish to use this function have to provide the required item in itemstack
+handle_schematics.place_node_using_support_setup = function(pos, clicker, itemstack )
+	-- TODO: does can_interact_with_node work with mobs?
 	if not( default.can_interact_with_node(clicker, pos)) then
 		return itemstack;
 	end
@@ -40,7 +42,7 @@ handle_schematics.place_node_using_support_setup = function(pos, node, clicker, 
 	-- pass right-clicks on to support nodes below (else some floor nodes may not be reachable)
 	local node_below = minetest.get_node( {x=pos.x, y=pos.y-1, z=pos.z} );
 	if( node_below and node_below.name and node_below.name == "handle_schematics:support_setup" ) then
-		return handle_schematics.place_node_using_support_setup({x=pos.x, y=pos.y-1, z=pos.z}, node_below, clicker, itemstack, pointed_thing );
+		return handle_schematics.place_node_using_support_setup({x=pos.x, y=pos.y-1, z=pos.z}, clicker, itemstack );
 	end
 
 	local meta = minetest.get_meta( pos );
@@ -101,7 +103,7 @@ end
 
 
 -- right-clicking a dig_here-indicator ought to dig the next node below it that needs digging and place appropriate scaffolding
-handle_schematics.dig_node_indicator_clicked = function(pos, node, clicker, itemstack, pointed_thing )
+handle_schematics.dig_node_using_dig_here_indicator = function(pos, clicker, itemstack )
 	if not( default.can_interact_with_node(clicker, pos)) then
 		return itemstack;
 	end
@@ -122,6 +124,9 @@ handle_schematics.dig_node_indicator_clicked = function(pos, node, clicker, item
 				-- get the entry at the right position
 				if( v and v[1] == p.y ) then
 					-- dig the old node and add it to the inventory
+					-- TODO: can mobs dig that way?
+					-- TODO: require suitable tools
+					-- TODO: tools ought to get dammaged a bit by digging
 					minetest.node_dig(p, node, clicker);
 					if( v[2] ~= minetest.get_content_id("air")) then
 						-- place the scaffolding node
@@ -161,7 +166,7 @@ minetest.register_node("handle_schematics:support_setup", {
 	-- note: mobs that want to use this function ought to provide "clicker" in a way so that clicker:get_inventory
 	--       can get used (at least if they want to have a limited inventory)
 	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
-				handle_schematics.place_node_using_support_setup(pos, node, clicker, itemstack, pointed_thing );
+				return handle_schematics.place_node_using_support_setup(pos, clicker, itemstack );
 			end
 })
 
@@ -187,7 +192,7 @@ minetest.register_node("handle_schematics:dig_here", {
                 fixed = {-2 / 16, -0.5, -2 / 16, 2 / 16, 6 / 16, 2 / 16}
         },
 	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
-				handle_schematics.dig_node_indicator_clicked(pos, node, clicker, itemstack, pointed_thing );
+				return handle_schematics.dig_node_using_dig_here_indicator(pos, clicker, itemstack );
 			end
 
 })
