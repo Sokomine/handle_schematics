@@ -157,7 +157,7 @@ end
 
 -- TODO: hopfefully, security will get more relaxed regarding reading directories in the future
 -- if security is enabled, our options to get schematics are a bit limited
-if( minetest.setting_getbool( 'secure.enable_security' )) then
+if( minetest.settings:get( 'secure.enable_security' )) then
 	local worldpath = minetest.get_worldpath();
 	local d3 = minetest.get_dir_list( worldpath..'/schems', false );
 	if( d3 ) then
