@@ -142,6 +142,9 @@ handle_schematics.analyze_mts_file = function( path )
 		end
 	end
 
+	-- some mods (like mg_villages) might be intrested in the number of npc that can live here
+	local bed_count = 0;
+
 	local p2offset = (size.x*size.y*size.z)*3;
 	local i = 1;
 	local scm = {};
@@ -161,12 +164,16 @@ handle_schematics.analyze_mts_file = function( path )
 
 		if( id ~= is_air ) then
 			scm[y][x][z] = {id, p2};
+			-- id is a relative id; ids[id] contains the "real" content_id
+			if( handle_schematics.bed_content_ids[ ids[ id]]) then
+				bed_count = bed_count + 1;
+			end
 		end
 	end
 	end
 	end
 
-	return { size = { x=size.x, y=size.y, z=size.z}, nodenames = nodenames, on_constr = on_constr, after_place_node = after_place_node, rotated=rotated, burried=burried, scm_data_cache = scm };
+	return { size = { x=size.x, y=size.y, z=size.z}, nodenames = nodenames, on_constr = on_constr, after_place_node = after_place_node, rotated=rotated, burried=burried, scm_data_cache = scm, bed_count = bed_count };
 end
 
 

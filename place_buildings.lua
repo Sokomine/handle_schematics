@@ -190,6 +190,11 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			new_nodes[ i ].is_replaced   = 1; -- currently unused
 			new_nodes[ i ].special_chest = 'default:bookshelf';
 			new_nodes[ i ].new_content   = cid.c_bookshelf;
+
+		-- recognize beds
+		elseif(     handle_schematics.bed_node_names[ node_name ]
+			or  handle_schematics.bed_node_names[ new_node_name ]) then
+			new_nodes[ i ].is_bed = 1;
 		end
 
 		-- only existing nodes can be placed
@@ -712,6 +717,10 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 					table.insert( extra_calls.door_a, {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
 				elseif( n.is_door_b ) then
 					table.insert( extra_calls.door_b, {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
+
+				-- beds are of special intrest to npc
+				elseif( n.is_bed ) then
+					table.insert( extra_calls.beds,   {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
 				end
 			end
 		end
@@ -779,7 +788,7 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 --print('REPLACEMENTS: '..minetest.serialize( replacements.table )..' CHEST: '..tostring( minetest.get_name_from_content_id( cid.c_chest ))); -- TODO
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {}, beds = {} };
 
 	for i, pos in ipairs(bpos) do
 		-- roads are only placed if there are at least mg_villages.MINIMAL_BUILDUNGS_FOR_ROAD_PLACEMENT buildings in the village
@@ -789,11 +798,20 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 			if( pos.road_material ) then
 				road_material = pos.road_material;
 			end
+			-- we need to collect the positions of all beds...even if they are placed in diffrent mapchunks
+			if( not( pos.beds )) then
+				pos.beds = {};
+			end
+			extra_calls.beds = pos.beds;
 			-- do not use scaffolding here; place the building directly
 			generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, road_material, true, false )
+			-- the bed positions are of intrest later on
+			pos.beds = extra_calls.beds;
 		end
 	end
 
+	-- we store the beds per building; not per village
+	extra_calls.beds = nil;
 	-- replacements are in list format for minetest.place_schematic(..) type spawning
 	return { extranodes = extranodes, bpos = bpos, replacements = replacements.list, dirt_roads = village.to_add_data.dirt_roads,
 			plantlist = village.to_add_data.plantlist, extra_calls = extra_calls };
@@ -892,7 +910,7 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:gravel',         replacements );
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {}, beds = {} };
 
 	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
 	local missing_nodes = generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
@@ -1040,7 +1058,6 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 		-- TODO: restore metadata for .mts files
 		--handle_schematics.restore_meta( filename, nil, binfo.metadata, start_pos, end_pos, start_pos.brotate, mirror);
 	end
-
 
 	local nodes_to_dig = 0;
 	for k, v in pairs( res.extra_calls.scaffolding ) do

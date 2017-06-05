@@ -3,6 +3,9 @@ handle_schematics = {}
 
 handle_schematics.modpath = minetest.get_modpath( "handle_schematics");
 
+-- populate handle_schematics.bed_node_names and handle_schematics.bed_content_ids
+dofile(handle_schematics.modpath.."/mob_bed_detection.lua")
+
 -- adds worldedit_file.* namespace
 -- deserialize worldedit savefiles
 dofile(handle_schematics.modpath.."/worldedit_file.lua")

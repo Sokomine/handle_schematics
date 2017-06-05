@@ -197,6 +197,8 @@ handle_schematics.analyze_mc_schematic_file = function( path )
 		translation_function = mccompat.findMC2MTConversion;
 	end
 
+	local bed_count = 0;
+
 	local max_msg = 40; -- just for error handling
 	local size = {x=mc_schematic_data.Width,  y=mc_schematic_data.Height, z=mc_schematic_data.Length};
 	local scm = {};
@@ -230,6 +232,9 @@ handle_schematics.analyze_mc_schematic_file = function( path )
 					new_node[2]=0;
 					max_msg=max_msg-1;
 				end
+				if( handle_schematics.bed_node_names[ new_node[1]] ) then
+					bed_count = bed_count + 1;
+				end
 				-- save some space by not saving air
 				if( new_node[1] ~= 'air' ) then
 					scm[y][x][z] = { nodenames_id[ new_node[1]], new_node[2]};
@@ -237,6 +242,6 @@ handle_schematics.analyze_mc_schematic_file = function( path )
 			end
 		end
 	end
-	return { size = { x=size.x, y=size.y, z=size.z}, nodenames = nodenames, on_constr = {}, after_place_node = {}, rotated=90, burried=0, scm_data_cache = scm, metadata = {}};
+	return { size = { x=size.x, y=size.y, z=size.z}, nodenames = nodenames, on_constr = {}, after_place_node = {}, rotated=90, burried=0, scm_data_cache = scm, metadata = {}, bed_count = bed_count};
 end
 

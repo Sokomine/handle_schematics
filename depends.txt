@@ -21,3 +21,4 @@ bell?
 mobf_trader?
 docfarming?
 mccompat?
+beds?
