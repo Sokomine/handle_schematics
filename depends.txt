@@ -22,3 +22,4 @@ mobf_trader?
 docfarming?
 mccompat?
 beds?
+unified_inventory?

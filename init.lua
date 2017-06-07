@@ -1,6 +1,16 @@
 
 handle_schematics = {}
 
+-- use the priv "creative" as provided by unified_inventory - or define it new;
+-- the priv allows the player to spawn the schematics direclty (without scaffolding)
+if( not( minetest.get_modpath( 'unified_inventory' ))) then
+	minetest.register_privilege("creative", {
+		description = "Can place schematics directly without scaffolding",
+		give_to_singleplayer = false,
+	})
+end
+
+
 handle_schematics.modpath = minetest.get_modpath( "handle_schematics");
 
 -- populate handle_schematics.bed_node_names and handle_schematics.bed_content_ids
