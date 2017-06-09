@@ -720,7 +720,15 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 
 				-- beds are of special intrest to npc
 				elseif( n.is_bed ) then
-					table.insert( extra_calls.beds,   {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
+					local found = false;
+					for i,bed in ipairs(extra_calls.beds ) do
+						if( bed and bed.x == ax and bed.y == ay and bed.z == az ) then
+							found = true;
+						end
+					end
+					if( not( found)) then
+						table.insert( extra_calls.beds,   {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
+					end
 				end
 			end
 		end
