@@ -127,6 +127,30 @@ end
 
 
 
+-- pos has to contain information about the building - o (orientation), bsizex and bsizez
+-- this function returns a position in front of the building, with the building stretching equally to the right and left
+-- (useful for mobs who want to leave/enter the plot)
+handle_schematics.get_pos_in_front_of_house = function( pos )
+	local p = {x=pos.x, y=pos.y+1, z=pos.z};
+	if(     pos.o == 0 ) then
+		p.x = p.x - 1;
+		p.z = p.z + pos.bsizez - 1;
+		p.z = p.z - math.floor(pos.bsizex/2+0.5);
+	elseif( pos.o == 2 ) then
+		p.x = p.x + pos.bsizex;
+		p.z = p.z + math.floor(pos.bsizex/2+0.5);
+	elseif( pos.o == 1 ) then
+		p.z = p.z + pos.bsizez;
+		p.x = p.x + pos.bsizex - 1;
+		p.x = p.x - math.floor(pos.bsizez/2+0.5);
+	elseif( pos.o == 3 ) then
+		p.z = p.z - 1;
+		p.x = p.x + math.floor(pos.bsizez/2+0.5);
+	end
+	return p;
+end
+
+
 -- we do have a list of all nodenames the building contains (the .mts file provided it);
 -- we can thus apply all replacements to these nodenames;
 -- this also checks param2 and sets some other variables to indicate that it's i.e. a tree or a chest
