@@ -135,21 +135,25 @@ handle_schematics.get_pos_in_front_of_house = function( pos, bed_nr )
 	if( not( bed_nr )) then
 		bed_nr = 0;
 	end
-	local p = {x=pos.x, y=pos.y+1, z=pos.z};
+	local p = {x=pos.x, y=pos.y+1, z=pos.z, yaw = 0};
 	if(     pos.o == 0 ) then
 		p.x = p.x - 1;
 		p.z = p.z + pos.bsizez - 1;
 		p.z = p.z - math.floor(pos.bsizex/2+0.5) - bed_nr;
+		p.yaw = 90;
 	elseif( pos.o == 2 ) then
 		p.x = p.x + pos.bsizex;
 		p.z = p.z + math.floor(pos.bsizex/2+0.5) + bed_nr;
+		p.yaw = 270;
 	elseif( pos.o == 1 ) then
 		p.z = p.z + pos.bsizez;
 		p.x = p.x + pos.bsizex - 1;
 		p.x = p.x - math.floor(pos.bsizez/2+0.5) - bed_nr;
+		p.yaw = 0;
 	elseif( pos.o == 3 ) then
 		p.z = p.z - 1;
 		p.x = p.x + math.floor(pos.bsizez/2+0.5) + bed_nr;
+		p.yaw = 180;
 	end
 	return p;
 end
