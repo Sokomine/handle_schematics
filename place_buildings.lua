@@ -132,8 +132,8 @@ end
 -- (useful for mobs who want to leave/enter the plot)
 -- bed_nr can be used to assign diffrent spawn points to mobs in diffrent beds
 handle_schematics.get_pos_in_front_of_house = function( pos, bed_nr )
-	if( not( mob_nr )) then
-		mob_nr = 0;
+	if( not( bed_nr )) then
+		bed_nr = 0;
 	end
 	local p = {x=pos.x, y=pos.y+1, z=pos.z};
 	if(     pos.o == 0 ) then
