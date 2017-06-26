@@ -138,6 +138,10 @@ build_chest.replacements_get_list_formspec = function( pos, selected_row, allow_
 					repl = r[2];
 				end
 			end
+			-- show global replacements
+			if( handle_schematics.global_replacement_table[ repl ]) then
+				repl = handle_schematics.global_replacement_table[ repl ];
+			end
 
 			-- avoid empty lines at the end
 			if( not_the_first_entry ) then

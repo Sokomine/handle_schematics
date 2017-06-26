@@ -33,3 +33,6 @@ end
 -- just some examples for testing:
 --handle_schematics.global_replacement_table[ 'default:wood' ] = 'default:mese';
 --handle_schematics.global_replacement_table[ 'stairs:stair_wood' ] = 'default:diamondblock';
+
+-- many people prefer the new 3d torch even if it will melt some snow
+handle_schematics.global_replacement_table[ 'mg_villages:torch' ] = 'default:torch';
