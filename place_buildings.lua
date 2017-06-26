@@ -26,7 +26,7 @@ end
 
 
 -- "drop" moresnow snow on diffrent shapes; works for voxelmanip and node-based setting
-handle_schematics.mg_drop_moresnow = function( x, z, y_top, y_bottom, a, data, param2_data)
+handle_schematics.mg_drop_moresnow = function( x, z, y_top, y_bottom, a, data, param2_data, cid)
 
 	-- this only works if moresnow is installed
 	if( not( handle_schematics.moresnow_installed )) then
@@ -45,15 +45,15 @@ handle_schematics.mg_drop_moresnow = function( x, z, y_top, y_bottom, a, data, p
 		    and node_below.content ~= moresnow.c_air ) then
 
 			-- turn water into ice, but don't drop snow on it
-			if( node_below.content == minetest.get_content_id("default:water_source")
-			 or node_below.content == minetest.get_content_id("default:river_water_source")) then
-				return { height = y, suggested = {new_id = minetest.get_content_id('default:ice'), param2 = 0 }};
+			if( node_below.content == cid.c_water_source
+			 or node_below.content == cid.c_river_water_source) then
+				return { height = y, suggested = {new_id = cid.c_ice, param2 = 0 }};
 			end
 
 			-- if the node below drops snow when digged (i.e. is either snow or a moresnow node), we're finished
 			local get_drop = minetest.get_name_from_content_id( node_below.content );
 			if( get_drop ) then
-				get_drop = minetest.registered_nodes[ get_drop ];
+				get_drop = handle_schematics.node_defined( get_drop );
 				if( get_drop and get_drop.drop and type( get_drop.drop )=='string' and get_drop.drop == 'default:snow') then
 					return;
 				end
@@ -138,21 +138,23 @@ handle_schematics.get_pos_in_front_of_house = function( pos, bed_nr )
 	local p = {x=pos.x, y=pos.y+1, z=pos.z, yaw = 0};
 	if(     pos.o == 0 ) then
 		p.x = p.x - 1;
-		p.z = p.z + pos.bsizez - 1;
-		p.z = p.z - math.floor(pos.bsizex/2+0.5) - bed_nr;
+		p.z = p.z + pos.bsizez - 1 - bed_nr;
+--		p.z = p.z - math.floor(pos.bsizex/2+0.5) - bed_nr;
 		p.yaw = 90;
 	elseif( pos.o == 2 ) then
 		p.x = p.x + pos.bsizex;
-		p.z = p.z + math.floor(pos.bsizex/2+0.5) + bed_nr;
+--		p.z = p.z + math.floor(pos.bsizex/2+0.5) + bed_nr;
+		p.z = p.z + bed_nr;
 		p.yaw = 270;
 	elseif( pos.o == 1 ) then
 		p.z = p.z + pos.bsizez;
-		p.x = p.x + pos.bsizex - 1;
-		p.x = p.x - math.floor(pos.bsizez/2+0.5) - bed_nr;
+		p.x = p.x + pos.bsizex - 1 - bed_nr;
+--		p.x = p.x - math.floor(pos.bsizez/2+0.5) - bed_nr;
 		p.yaw = 0;
 	elseif( pos.o == 3 ) then
 		p.z = p.z - 1;
-		p.x = p.x + math.floor(pos.bsizez/2+0.5) + bed_nr;
+--		p.x = p.x + math.floor(pos.bsizez/2+0.5) + bed_nr;
+		p.x = p.x + bed_nr;
 		p.yaw = 180;
 	end
 	return p;
@@ -230,9 +232,13 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 		end
 
 		-- only existing nodes can be placed
-		if( new_node_name and minetest.registered_nodes[ new_node_name ]) then
-							
-			local regnode = minetest.registered_nodes[ new_node_name ];
+		local regnode = handle_schematics.node_defined( new_node_name );
+		if( new_node_name and regnode) then
+
+			-- apply global replacements
+			if( handle_schematics.global_replacement_table[ new_node_name ]) then
+				new_node_name = handle_schematics.global_replacement_table[ new_node_name ];
+			end
 
 			new_nodes[ i ].new_node_name = new_node_name;
 			new_nodes[ i ].new_content   = minetest.get_content_id( new_node_name );
@@ -296,7 +302,7 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			-- handle_schematics.get_param2_rotated( 'facedir', param2 ) needs to be called for nodes
 			-- which use either facedir or wallmounted;
 			-- realtest rotates some nodes diffrently and does not come with default:ladder
-			if(    node_name == 'default:ladder' and not( minetest.registered_nodes[ node_name ])) then
+			if(    node_name == 'default:ladder' and handle_schematics.is_realtest) then
 				new_nodes[ i ].change_param2 = {}; --{ 2->1, 5->2, 3->3, 4->0 }	
 				new_nodes[ i ].change_param2[2] = 1;
 				new_nodes[ i ].change_param2[5] = 2;
@@ -495,6 +501,11 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 	local c_scaffolding_empty    = minetest.get_content_id( "handle_schematics:support" );
 	local c_scaffolding          = minetest.get_content_id( "handle_schematics:support_setup" );
 	local c_dig_here             = minetest.get_content_id( "handle_schematics:dig_here" );
+
+	-- freeze water if there is moresnow on top
+	cid.c_water_source       = minetest.get_content_id( "default:water_source");
+	cid.c_river_water_source = minetest.get_content_id( "default:river_water_source");
+	cid.c_ice                = minetest.get_content_id( "default:ice");
 
 	local scm_x = 0;
 	local scm_z = 0;
@@ -776,7 +787,7 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 			y_bottom = minp.y;
 		end
 		if( has_snow and ax >= minp.x and ax <= maxp.x and az >= minp.z and az <= maxp.z ) then
-			local res = handle_schematics.mg_drop_moresnow( ax, az, y_top, y_bottom-1, a, data, param2_data);
+			local res = handle_schematics.mg_drop_moresnow( ax, az, y_top, y_bottom-1, a, data, param2_data, cid);
 			if( res and (data[ a:index(ax, res.height, az)]==cid.c_air
 			          or data[ a:index(ax, res.height, az)]==cid.c_water )) then
 				data[       a:index(ax, res.height, az)] = res.suggested.new_id;
@@ -975,17 +986,16 @@ handle_schematics.setup_scaffolding = function( v )
 
 	local node_name = minetest.get_name_from_content_id(v.node_wanted);
 	local descr = tostring(node_name);
-	if( node_name and minetest.registered_nodes[ node_name ] ) then
-		if(     minetest.registered_nodes[ node_name ].drop
-		    -- the drop can be a craftitem
-		    and minetest.registered_items[ minetest.registered_nodes[ node_name ].drop ]
-		    and not( handle_schematics.direct_instead_of_drop[ node_name ])) then
-			descr =  minetest.registered_items[ minetest.registered_nodes[ node_name ].drop ].description;
-		elseif( minetest.registered_nodes[ node_name ].description ) then
-			descr =  minetest.registered_nodes[ node_name ].description;
-		else
-			descr = "- ? -";
-		end
+	local node_def = handle_schematics.node_defined( node_name );
+	if(     node_def and node_def.drop
+	    -- the drop can be a craftitem
+	    and minetest.registered_items[ node_def.drop ]
+	    and not( handle_schematics.direct_instead_of_drop[ node_name ])) then
+		descr =  minetest.registered_items[ node_def.drop ].description;
+	elseif( node_def and node_def.description ) then
+		descr =  node_def.description;
+	else
+		descr = "- ? -";
 	end
 
 	local meta = minetest.get_meta( v );
@@ -1065,9 +1075,10 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 	-- trees, chests and signs receive no special treatment here
 	for k, v in pairs( res.extra_calls.on_constr ) do
 		local node_name = minetest.get_name_from_content_id( k );
-		if( minetest.registered_nodes[ node_name ].on_construct ) then
+		local node_def = handle_schematics.node_defined( node_name );
+		if( node_def and node_def.on_construct ) then
 			for _, pos in ipairs(v) do
-				minetest.registered_nodes[ node_name ].on_construct( pos );
+				node_def.on_construct( pos );
 			end
 		end
 	end

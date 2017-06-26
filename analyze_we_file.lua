@@ -1,6 +1,4 @@
 handle_schematics.analyze_we_file = function(scm, we_origin)
-	local c_ignore = minetest.get_content_id("ignore")
-
 	-- this table will contain the nodes read
 	local nodes = {}
 

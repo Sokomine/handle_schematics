@@ -30,7 +30,7 @@ replacements_group['wood'].replace_material = function( replacements, old_wood, 
 	for i=3,#old_nodes do
 		local old = old_nodes[i];
 		local new = old;
-		if( i<=#new_nodes and new_nodes[i] and minetest.registered_nodes[ new_nodes[i]] ) then
+		if( i<=#new_nodes and new_nodes[i] and handle_schematics.node_defined( new_nodes[i])) then
 			new = new_nodes[i];
 			local found = false;
 			for i,v in ipairs(replacements) do
@@ -65,7 +65,7 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 		-- create a complete list of all possible wood names
 		table.insert( replacements_group['wood'].all, wood_name );
 		-- create a list of all *installed* wood types
-		if( minetest.registered_nodes[ wood_name ]) then
+		if( handle_schematics.node_defined( wood_name )) then
 			table.insert( replacements_group['wood'].found, wood_name );
 			is_loaded = true;
 		end

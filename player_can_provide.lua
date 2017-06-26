@@ -1,4 +1,3 @@
-
 -- if the player builds a house manually, there are some nodes the players cannot
 -- supply as the nodes are not obtainable (only their drop) - thus, in most cases,
 -- the drop is what we ask for; except for these nodes where the origianl node
@@ -45,12 +44,13 @@ handle_schematics.get_what_player_can_provide = function( node_wanted )
 
 	-- some nodes like i.e. dirt with grass or stone with coal cannot be obtained;
 	-- in such a case we ask for the drop; this is also useful for doors etc.
-	if(    minetest.registered_nodes[ node_wanted ]
+	local node_def = handle_schematics.node_defined( node_wanted );
+	if(   node_def
 	  -- provided the drop actually exists
-	  and minetest.registered_nodes[ node_wanted ].drop
-	  and minetest.registered_items[ minetest.registered_nodes[ node_wanted ].drop ]) then
+	  and node_def.drop
+	  and minetest.registered_items[ node_def.drop ]) then
 
-		return minetest.registered_nodes[ node_wanted ].drop;
+		return node_def.drop;
 	end
 
 	-- the player ought to be able to come up with this node (or we need to define more exceptions)

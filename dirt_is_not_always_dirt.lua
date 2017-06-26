@@ -5,8 +5,8 @@ handle_schematics.also_acceptable = {};
 handle_schematics.add_also_acceptable = function( name1, name2 )
 	-- only add entry if both nodes exist
 	if(  not( name1 ) or not( name2 ) or name1==name2
-	  or not( minetest.registered_nodes[ name1 ] )
-	  or not( minetest.registered_nodes[ name2 ] )
+	  or not( handle_schematics.node_defined( name1 ))
+	  or not( handle_schematics.node_defined( name2 ))
 	  or handle_schematics.direct_instead_of_drop[ name1 ]
 	  or handle_schematics.direct_instead_of_drop[ name2 ]) then
 		return;
@@ -70,7 +70,7 @@ handle_schematics.enable_doors_open_closed = function()
 		  and type( v.drop )=='string'
 		  and v.drop ~= k ) then
 
-			if( minetest.registered_nodes[ v.drop ]
+			if( handle_schematics.node_defined( v.drop )
 			  -- stone and desert_stone need to be handled diffrently;
 			  -- some dirt and grass types etc. are also handled
 			  and not(handle_schematics.direct_instead_of_drop[ k ])) then

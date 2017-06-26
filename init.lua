@@ -13,6 +13,19 @@ end
 
 handle_schematics.modpath = minetest.get_modpath( "handle_schematics");
 
+-- realtest handles some things diffrently without beeing easy to identify
+handle_schematics.is_realtest = nil;
+if(        minetest.registered_nodes["oven:oven"]
+  and not( minetest.registered_nodes["default:furnace"])
+  and      minetest.registered_nodes["grounds:clay"]
+  and not( minetest.registered_nodes["default:clay"])) then
+	handle_schematics.is_realtest = true;
+end
+
+-- globally change nodes from the schematics into others; useful if you
+-- i.e. do not have default installed
+dofile(handle_schematics.modpath.."/replacements_global.lua")
+
 -- populate handle_schematics.bed_node_names and handle_schematics.bed_content_ids
 dofile(handle_schematics.modpath.."/mob_bed_detection.lua")
 

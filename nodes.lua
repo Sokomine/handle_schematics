@@ -84,11 +84,12 @@ handle_schematics.place_node_using_support_setup = function(pos, clicker, itemst
 		return itemstack;
 	end
 	-- give the player some feedback (might scroll a bit..)
+	local node_def = handle_schematics.node_defined( node_really_wanted );
 	if( clicker:is_player()
-	   and minetest.registered_nodes[ node_really_wanted ]
-	   and minetest.registered_nodes[ node_really_wanted ].description) then
+	   and node_def
+	   and node_def.description) then
 		minetest.chat_send_player( clicker:get_player_name(),
-			"Placed "..( minetest.registered_nodes[ node_really_wanted ].description or node_really_wanted)..".");
+			"Placed "..( node_def.description or node_really_wanted)..".");
 	end
 	-- take the item from the player (provided it actually is a player and not a mob)
 	if( clicker.get_inventory ) then
@@ -114,12 +115,13 @@ handle_schematics.dig_node_using_dig_here_indicator = function(pos, clicker, ite
 		return itemstack;
 	end
 	local nodes_wanted = minetest.deserialize( nodes_wanted_str );
+	local cid_air = minetest.get_content_id("air");
 
 	for i=1,table.getn( nodes_wanted ) do
 		local p = {x=pos.x, y=pos.y-i, z=pos.z};
 		local node = minetest.get_node( p );
 		-- found a node that is not yet scaffolding
-		if( node and node.name and (node.name ~= "handle_schematics:support_setup" and node.name ~= "air")) then
+		if( node and node.name and node.name ~= "handle_schematics:support_setup") then
 			for j,v in ipairs( nodes_wanted ) do
 				-- get the entry at the right position
 				if( v and v[1] == p.y ) then
@@ -127,16 +129,19 @@ handle_schematics.dig_node_using_dig_here_indicator = function(pos, clicker, ite
 					-- TODO: can mobs dig that way?
 					-- TODO: require suitable tools
 					-- TODO: tools ought to get dammaged a bit by digging
-					minetest.node_dig(p, node, clicker);
-					if( v[2] ~= minetest.get_content_id("air")) then
+					if( node.name ~= "air") then
+						minetest.node_dig(p, node, clicker);
+						-- TODO: if the digged node is the first that is to go into this itemstack it won't end up in the player's inventory
+						return itemstack;
+					end
+					if( v[2] ~= cid_air) then
 						-- place the scaffolding node
 						minetest.set_node( p, {name="handle_schematics:support_setup"});
 						-- configure the scaffolding node
 						handle_schematics.setup_scaffolding( { x=p.x, y=p.y, z=p.z, node_wanted=v[2], param2_wanted=v[3] });
 						-- we are done
+						return itemstack;
 					end
-					-- TODO: if the digged node is the first that is to go into this itemstack it won't end up in the player's inventory
-					return itemstack;
 				end
 			end
 		end
