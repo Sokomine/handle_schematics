@@ -102,16 +102,20 @@ local function generate_building_plotmarker( pos, minp, maxp, data, param2_data,
 		p.x = p.x - 1;
 		p.z = p.z + pos.bsizez - 1;
 		v.z = -1;
+		p.yaw = 90;
 	elseif( pos.o == 2 ) then
 		p.x = p.x + pos.bsizex;
 		v.z = 1;
+		p.yaw = 270;
 	elseif( pos.o == 1 ) then
 		p.z = p.z + pos.bsizez;
 		p.x = p.x + pos.bsizex - 1;
 		v.x = -1;
+		p.yaw = 0;
 	elseif( pos.o == 3 ) then
 		p.z = p.z - 1;
 		v.x = 1;
+		p.yaw = 180;
 	end
 	-- actually position the marker
 	if(   p.x >= minp.x and p.x <= maxp.x and p.z >= minp.z and p.z <= maxp.z and p.y >= minp.y and p.y <= maxp.y) then
@@ -128,6 +132,8 @@ local function generate_building_plotmarker( pos, minp, maxp, data, param2_data,
 		meta:set_string('village_id', village_id );
 		meta:set_int(   'plot_nr',    building_nr_in_bpos );
 		meta:set_string('infotext',   'Plot No. '..tostring( building_nr_in_bpos ).. ' with '..tostring( filename ));
+		-- information about the direction the mob ought to look at
+		meta:set_int('yaw', p.yaw );
 	end
 
 	-- place a mob spawner in front of the house for each bed
