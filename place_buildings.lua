@@ -96,16 +96,22 @@ local function generate_building_plotmarker( pos, minp, maxp, data, param2_data,
 	-- position the plot marker so that players can later buy this plot + building in order to modify it
 	-- pos.o contains the original orientation (determined by the road and the side the building is
 	local p = {x=pos.x, y=pos.y+1, z=pos.z};
+	-- vector for placing mg_villages:mob_spawner
+	local v = {x=0,z=0};
 	if(     pos.o == 0 ) then
 		p.x = p.x - 1;
 		p.z = p.z + pos.bsizez - 1;
+		v.z = -1;
 	elseif( pos.o == 2 ) then
 		p.x = p.x + pos.bsizex;
+		v.z = 1;
 	elseif( pos.o == 1 ) then
 		p.z = p.z + pos.bsizez;
 		p.x = p.x + pos.bsizex - 1;
+		v.x = -1;
 	elseif( pos.o == 3 ) then
 		p.z = p.z - 1;
+		v.x = 1;
 	end
 	-- actually position the marker
 	if(   p.x >= minp.x and p.x <= maxp.x and p.z >= minp.z and p.z <= maxp.z and p.y >= minp.y and p.y <= maxp.y) then
@@ -122,6 +128,32 @@ local function generate_building_plotmarker( pos, minp, maxp, data, param2_data,
 		meta:set_string('village_id', village_id );
 		meta:set_int(   'plot_nr',    building_nr_in_bpos );
 		meta:set_string('infotext',   'Plot No. '..tostring( building_nr_in_bpos ).. ' with '..tostring( filename ));
+	end
+
+	-- place a mob spawner in front of the house for each bed
+	-- we do it here so that the roads will not overwrite it
+	local binfo = mg_villages.BUILDINGS[pos.btype];
+	if( not( binfo ) or not( binfo.bed_count ) or binfo.bed_count<1) then
+		return;
+	end
+	cid.c_mob_spawner = minetest.get_content_id("mg_villages:mob_spawner");
+	p.y = p.y - 1; -- TODO: set this to -2 later on to hide the spawner from view
+	for i=1,binfo.bed_count do
+		p.x = p.x + v.x;
+		p.z = p.z + v.z;
+		if(   p.x >= minp.x and p.x <= maxp.x and p.z >= minp.z
+		  and p.z <= maxp.z and p.y >= minp.y and p.y <= maxp.y) then
+			-- place the mob spawner
+			data[       a:index(p.x, p.y, p.z)] = cid.c_mob_spawner;
+			-- not really necessary but can't hurt
+			param2_data[a:index(p.x, p.y, p.z)] = pos.brotate;
+			-- store where to find information about the mob this spawner is responsible for
+			local meta = minetest.get_meta( p );
+			meta:set_string('village_id', village_id );
+			meta:set_int(   'plot_nr',    building_nr_in_bpos );
+			meta:set_int(   'bed_nr',     i );
+			meta:set_string('infotext',   'MOB SPAWNER for bed nr '..tostring(i)..' on plot nr '..tostring( building_nr_in_bpos )..' in village '..tostring( village_id ));
+		end
 	end
 end
 
@@ -371,7 +403,7 @@ local function generate_building_what_to_place_here_and_how(t, node_content, new
 	end
 
 	-- do not overwrite plotmarkers
-	if( new_content == cid.c_air and node_content == cid.c_plotmarker ) then
+	if( node_content == cid.c_plotmarker or node_content == cid.c_mob_spawner) then
 		-- keep the old content
 		new_content = node_content;
 	end
@@ -939,7 +971,8 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	cid.c_psapling         = handle_schematics.get_content_id_replaced( 'default:pine_sapling',   replacements );
 	cid.c_savannasapling   = handle_schematics.get_content_id_replaced( 'mg:savannasapling',      replacements );
 	cid.c_pinesapling      = handle_schematics.get_content_id_replaced( 'mg:pinesapling',         replacements );
-	cid.c_plotmarker       = handle_schematics.get_content_id_replaced( 'mg_villages:plotmarker', replacements );
+	cid.c_plotmarker       = minetest.get_content_id('mg_villages:plotmarker');
+	cid.c_mob_spawner      = minetest.get_content_id('mg_villages:mob_spawner');
 
 	cid.c_chest            = handle_schematics.get_content_id_replaced( 'default:chest',          replacements );
 	cid.c_chest_locked     = handle_schematics.get_content_id_replaced( 'default:chest_locked',   replacements );
