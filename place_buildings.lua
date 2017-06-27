@@ -133,7 +133,7 @@ local function generate_building_plotmarker( pos, minp, maxp, data, param2_data,
 	-- place a mob spawner in front of the house for each bed
 	-- we do it here so that the roads will not overwrite it
 	local binfo = mg_villages.BUILDINGS[pos.btype];
-	if( not( binfo ) or not( binfo.bed_count ) or binfo.bed_count<1) then
+	if( not( binfo ) or not( binfo.bed_count ) or binfo.bed_count<1 or not( minetest.registered_nodes["mg_villages:mob_spawner"])) then
 		return;
 	end
 	cid.c_mob_spawner = minetest.get_content_id("mg_villages:mob_spawner");
