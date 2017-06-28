@@ -69,6 +69,8 @@ build_chest.read_building = function( building_name )
 	build_chest.building[ building_name ].burried        = res.burried;	
 	build_chest.building[ building_name ].metadata       = res.metadata;
 	build_chest.building[ building_name ].bed_count      = res.bed_count;
+	-- mobs are very intrested in beds in which they might sleep at night
+	build_chest.building[ building_name ].bed_list       = res.bed_list;
 	-- scm_data_cache is not stored as that would take up too much storage space
 	--build_chest.building[ building_name ].scm_data_cache = res.scm_data_cache;	
 
