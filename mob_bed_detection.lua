@@ -6,6 +6,7 @@ handle_schematics.bed_node_names = {};
 handle_schematics.bed_node_names['cottages:bed_head'] = 1;
 handle_schematics.bed_node_names['beds:bed_top'] = 1;
 handle_schematics.bed_node_names['beds:fancy_bed_top'] = 1;
+handle_schematics.bed_node_names['cottages:sleeping_mat_head'] = 1;
 
 -- content ids of nodes that are beds
 handle_schematics.bed_content_ids = {};
