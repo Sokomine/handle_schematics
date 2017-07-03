@@ -294,6 +294,8 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			elseif( new_content == cid.c_sapling
 			     or new_content == cid.c_jsapling
 			     or new_content == cid.c_psapling
+			     or new_content == cid.c_asapling
+			     or new_content == cid.c_aspsapling
 			     or new_content == cid.c_savannasapling
 			     or new_content == cid.c_pinesapling ) then
 				-- store that a tree is to be grown there
@@ -975,6 +977,8 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	cid.c_sapling          = handle_schematics.get_content_id_replaced( 'default:sapling',        replacements );
 	cid.c_jsapling         = handle_schematics.get_content_id_replaced( 'default:junglesapling',  replacements );
 	cid.c_psapling         = handle_schematics.get_content_id_replaced( 'default:pine_sapling',   replacements );
+	cid.c_asapling         = handle_schematics.get_content_id_replaced( 'default:acacia_sapling', replacements );
+	cid.c_aspsapling       = handle_schematics.get_content_id_replaced( 'default:aspen_sapling',  replacements );
 	cid.c_savannasapling   = handle_schematics.get_content_id_replaced( 'mg:savannasapling',      replacements );
 	cid.c_pinesapling      = handle_schematics.get_content_id_replaced( 'mg:pinesapling',         replacements );
 	cid.c_plotmarker       = minetest.get_content_id('mg_villages:plotmarker');
