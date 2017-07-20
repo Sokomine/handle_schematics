@@ -267,6 +267,10 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 		elseif(     handle_schematics.bed_node_names[ node_name ]
 			or  handle_schematics.bed_node_names[ new_node_name ]) then
 			new_nodes[ i ].is_bed = 1;
+
+		elseif(     node_name == "mg_villages:mob_workplace_marker"
+		    or  new_node_name == "mg_villages:mob_workplace_marker" ) then
+			new_nodes[ i ].is_workplace_marker = 1;
 		end
 
 		-- only existing nodes can be placed
@@ -812,6 +816,18 @@ local function generate_building(pos, minp, maxp, data, param2_data, a, extranod
 					if( not( found)) then
 						table.insert( extra_calls.beds,   {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
 					end
+
+				-- workplace markers need to know their village_id, plot_nr etc. as well
+				elseif( n.is_workplace_marker ) then
+					local found = false;
+					for i,w in ipairs(extra_calls.workplaces ) do
+						if( w and w.x == ax and w.y == ay and w.z == az ) then
+							found = true;
+						end
+					end
+					if( not( found)) then
+						table.insert( extra_calls.workplaces,   {x=ax, y=ay, z=az, typ=new_content, p2=param2_data[a:index(ax, ay, az)]});
+					end
 				end
 			end
 		end
@@ -879,7 +895,7 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 --print('REPLACEMENTS: '..minetest.serialize( replacements.table )..' CHEST: '..tostring( minetest.get_name_from_content_id( cid.c_chest ))); -- TODO
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {}, beds = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {}, beds = {}, workplaces = {} };
 
 	for i, pos in ipairs(bpos) do
 		-- roads are only placed if there are at least mg_villages.MINIMAL_BUILDUNGS_FOR_ROAD_PLACEMENT buildings in the village
@@ -894,15 +910,21 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 				pos.beds = {};
 			end
 			extra_calls.beds = pos.beds;
+			if( not( pos.workplaces )) then
+				pos.workplaces = {};
+			end
+			extra_calls.workplaces = pos.workplaces;
 			-- do not use scaffolding here; place the building directly
 			generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, road_material, true, false )
 			-- the bed positions are of intrest later on
 			pos.beds = extra_calls.beds;
+			pos.workplaces = extra_calls.workplaces;
 		end
 	end
 
 	-- we store the beds per building; not per village
 	extra_calls.beds = nil;
+	extra_calls.workplaces = nil;
 	-- replacements are in list format for minetest.place_schematic(..) type spawning
 	return { extranodes = extranodes, bpos = bpos, replacements = replacements.list, dirt_roads = village.to_add_data.dirt_roads,
 			plantlist = village.to_add_data.plantlist, extra_calls = extra_calls };
@@ -1004,7 +1026,7 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:gravel',         replacements );
 
 	local extranodes = {}
-	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {}, beds = {} };
+	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {}, beds = {}, workplaces = {} };
 
 	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
 	local missing_nodes = generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
