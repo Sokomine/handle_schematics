@@ -143,7 +143,7 @@ local function generate_building_plotmarker( pos, minp, maxp, data, param2_data,
 		return;
 	end
 	cid.c_mob_spawner = minetest.get_content_id("mg_villages:mob_spawner");
-	p.y = p.y - 1; -- TODO: set this to -2 later on to hide the spawner from view
+	p.y = p.y - 2; -- hide the spawner from view
 	for i=1,binfo.bed_count do
 		p.x = p.x + v.x;
 		p.z = p.z + v.z;
