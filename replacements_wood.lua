@@ -30,7 +30,7 @@ replacements_group['wood'].replace_material = function( replacements, old_wood, 
 	for i=3,#old_nodes do
 		local old = old_nodes[i];
 		local new = old;
-		if( i<=#new_nodes and new_nodes[i] and handle_schematics.node_defined( new_nodes[i])) then
+		if( old and new_nodes[i] and handle_schematics.node_defined( new_nodes[i])) then
 			new = new_nodes[i];
 			local found = false;
 			for i,v in ipairs(replacements) do
@@ -83,6 +83,8 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 				gate_pre..v..gate_post..'_open',  -- 10.  "  "    for cottages:gate_open
 				gate_pre..v..gate_post..'_closed',-- 11.  "  "    for cottages:gate_closed
 		};
+		data[24] = stair_pre.."inner_"..v..stair_post; -- 24. "  "  for stairs:stair_inner_wood
+		data[25] = stair_pre.."outer_"..v..stair_post; -- 25. "  "  for stairs:stair_outer_wood
 
 		-- normal wood does have a number of nodes which might get replaced by more specialized wood types
 		if( mod_prefix=='default:' and v=='' ) then
@@ -101,6 +103,8 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 			data[21] = 'stairs:slab_'..w..'upside_down';
 			data[22] = 'doors:trapdoor_open';
 			data[23] = 'doors:trapdoor';
+			data[24] = 'stairs:stair_inner_'..w;
+			data[25] = 'stairs:stair_outer_'..w;
 		-- realtest has some further replacements
 		elseif( mod_prefix=='trees:' and w_post=='_planks' and t_post=='_log' ) then
 			data[12] = 'trees:'..v..'_ladder';
@@ -115,6 +119,8 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 			data[21] = 'trees:'..v..'_planks_slab_upside_down';
 			data[22] = 'hatches:'..v..'_hatch_opened_top';
 			data[23] = 'hatches:'..v..'_hatch_opened_bottom';
+			data[24] = 'stairs:stair_inner_'..v..'_wood';
+			data[25] = 'stairs:stair_outer_'..v..'_wood';
 		end
 		replacements_group['wood'].data[ wood_name ] = data;
 
