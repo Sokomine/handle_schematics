@@ -44,7 +44,7 @@ handle_schematics.replace_randomized = function( replacements, new_materials )
 	if( not( replacements )) then
 		replacements = {};
 	end
-	if( not( new_materials ) or true) then
+	if( not( new_materials )) then
 		new_materials = {};
 	end
 	-- these chests from cottages exist no longer
