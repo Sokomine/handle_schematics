@@ -1136,34 +1136,10 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 		v = nil;
 	end
 
-	-- call on_construct where needed;
-	-- trees, chests and signs receive no special treatment here
-	for k, v in pairs( res.extra_calls.on_constr ) do
-		local node_name = minetest.get_name_from_content_id( k );
-		local node_def = handle_schematics.node_defined( node_name );
-		if( node_def and node_def.on_construct ) then
-			for _, pos in ipairs(v) do
-				node_def.on_construct( pos );
-			end
-		end
-	end
-
-	for k, v in pairs( res.extra_calls.door_b ) do
-		local meta = minetest.get_meta( v );
-
-		local l = 2 -- b
-		local h = meta:get_int("right") + 1
-
-		local replace = {
-			{ { type = "a", state = 0 }, { type = "a", state = 3 } },
-			{ { type = "b", state = 1 }, { type = "b", state = 2 } }
-		}
-		local new = replace[l][h]
---		minetest.swap_node(v, {name = name .. "_" .. new.type, param2 = v.p2})
-		meta:set_int("state", new.state)
-		-- wipe meta on top node as it's unused
-		minetest.set_node({x = v.x, y = v.y + 1, z = v.z}, { name = "doors:hidden" })
-	end
+	-- do the necessary on_construct calls that mostly affect metadata
+	handle_schematics.call_on_construct( res.extra_calls.on_constr );
+	-- set up doors properly (to whatever minetest_game currently demands)
+	handle_schematics.call_door_setup( res.extra_calls.door_b );
 
 
 	if( binfo.metadata ) then
@@ -1342,6 +1318,56 @@ handle_schematics.clear_area = function( start_pos, end_pos, ground_level)
 	vm:write_to_map();
 	vm:update_liquids();
 	vm:update_map();
+end
+
+
+
+-- call on_construct where needed;
+-- trees, chests and signs receive no special treatment here
+--
+-- the function generate_building(..) returns a table that includes the
+-- table extra_calls.on_constr; that one is needed as input here and
+-- on_construct is called for all the nodes (indices of the table) and
+-- positions (stored in an array)
+handle_schematics.call_on_construct = function( extra_calls_on_constr )
+	if( not( extra_calls_on_constr )) then
+		return;
+	end
+	for k, v in pairs( extra_calls_on_constr ) do
+		local node_name = minetest.get_name_from_content_id( k );
+		local node_def = handle_schematics.node_defined( node_name );
+		if( node_def and node_def.on_construct ) then
+			for _, pos in ipairs(v) do
+				node_def.on_construct( pos );
+			end
+		end
+	end
+end
+
+-- the function generate_building(..) returns a table that includes the
+-- table extra_calls.door_b; that table includes node names and positions
+-- of doors that need further setup regarding metadata and changes in
+-- minetest_game over time
+handle_schematics.call_door_setup = function( extra_calls_door_b )
+	if( not( extra_calls_door_b )) then
+		return;
+	end
+	for k, v in pairs( extra_calls_door_b ) do
+		local meta = minetest.get_meta( v );
+
+		-- taken from the doors mod in minetest_game
+		local l = 2 -- b
+		local h = meta:get_int("right") + 1
+
+		local replace = {
+			{ { type = "a", state = 0 }, { type = "a", state = 3 } },
+			{ { type = "b", state = 1 }, { type = "b", state = 2 } }
+		}
+		local new = replace[l][h]
+		meta:set_int("state", new.state)
+		-- wipe meta on top node as it's unused
+		minetest.set_node({x = v.x, y = v.y + 1, z = v.z}, { name = "doors:hidden" })
+	end
 end
 
 
