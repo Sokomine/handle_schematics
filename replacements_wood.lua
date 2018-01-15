@@ -193,7 +193,7 @@ replacements_group['wood'].construct_wood_type_list = function()
 
 	-- https://github.com/tenplus1/ethereal
 	-- ethereal does not have a common naming convention for leaves
-	replacements_group['wood'].add_material( {'acacia','redwood'},'ethereal:',  '','_wood',   '','_trunk', '','_leaves', '','_sapling',
+	replacements_group['wood'].add_material( {'acacia','redwood','birch'},'ethereal:',  '','_wood',   '','_trunk', '','_leaves', '','_sapling',
 		'stairs:stair_','_wood', 'stairs:slab_','_wood',   'ethereal:fence_','',     'ethereal:','gate');
 	-- frost has another sapling type...
 	replacements_group['wood'].add_material( {'frost'},           'ethereal:',  '','_wood',   '','_tree', '','_leaves', '','_tree_sapling',
@@ -214,6 +214,7 @@ replacements_group['wood'].construct_wood_type_list = function()
 	-- the stairs are also called slightly diffrently (end in _trunk instead of _wood)
 	replacements_group['wood'].add_material( {'mushroom'},        'ethereal:',  '','_pore',   '','_trunk', '','',        '','_sapling',
 		'stairs:stair_','_trunk', 'stairs:slab_','_trunk', 'ethereal:fence_', '',    'ethereal:','gate' );
+	-- note: big tree and orange tree do not have their own wood
 
 	
 	-- https://github.com/VanessaE/realtest_game
