@@ -472,7 +472,7 @@ end
 
 
 -- if scaffolding_only is set, a statistic of missing_nodes will be returned
-local function generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node, keep_ground, scaffolding_only)
+handle_schematics.generate_building = function(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, building_nr_in_bpos, village_id, binfo_extra, road_node, keep_ground, scaffolding_only)
 	local binfo = binfo_extra;
 	if( not( binfo ) and mg_villages) then
 		binfo = mg_villages.BUILDINGS[pos.btype]
@@ -915,7 +915,7 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 			end
 			extra_calls.workplaces = pos.workplaces;
 			-- do not use scaffolding here; place the building directly
-			generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, road_material, true, false )
+			handle_schematics.generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, i, village_id, nil, road_material, true, false )
 			-- the bed positions are of intrest later on
 			pos.beds = extra_calls.beds;
 			pos.workplaces = extra_calls.workplaces;
@@ -931,6 +931,45 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 end
 
 
+
+-- get content ids replaced
+handle_schematics.get_cid_table = function( replacements )
+	-- only very few nodes are actually used from the cid table (content ids)
+	local cid = {};
+	cid.c_air              = minetest.get_content_id( 'air' );
+	cid.c_dirt             = handle_schematics.get_content_id_replaced( 'default:dirt',           replacements );
+	cid.c_dirt_with_grass  = handle_schematics.get_content_id_replaced( 'default:dirt_with_grass',replacements );
+	cid.c_sapling          = handle_schematics.get_content_id_replaced( 'default:sapling',        replacements );
+	cid.c_jsapling         = handle_schematics.get_content_id_replaced( 'default:junglesapling',  replacements );
+	cid.c_psapling         = handle_schematics.get_content_id_replaced( 'default:pine_sapling',   replacements );
+	cid.c_asapling         = handle_schematics.get_content_id_replaced( 'default:acacia_sapling', replacements );
+	cid.c_aspsapling       = handle_schematics.get_content_id_replaced( 'default:aspen_sapling',  replacements );
+	cid.c_savannasapling   = handle_schematics.get_content_id_replaced( 'mg:savannasapling',      replacements );
+	cid.c_pinesapling      = handle_schematics.get_content_id_replaced( 'mg:pinesapling',         replacements );
+	cid.c_plotmarker       = minetest.get_content_id('mg_villages:plotmarker');
+	cid.c_mob_spawner      = minetest.get_content_id('mg_villages:mob_spawner');
+
+	cid.c_chest            = handle_schematics.get_content_id_replaced( 'default:chest',          replacements );
+	cid.c_chest_locked     = handle_schematics.get_content_id_replaced( 'default:chest_locked',   replacements );
+	cid.c_chest_shelf      = handle_schematics.get_content_id_replaced( 'cottages:shelf',         replacements );
+	cid.c_chest_ash        = handle_schematics.get_content_id_replaced( 'trees:chest_ash',        replacements );
+	cid.c_chest_aspen      = handle_schematics.get_content_id_replaced( 'trees:chest_aspen',      replacements );
+	cid.c_chest_birch      = handle_schematics.get_content_id_replaced( 'trees:chest_birch',      replacements );
+	cid.c_chest_maple      = handle_schematics.get_content_id_replaced( 'trees:chest_maple',      replacements );
+	cid.c_chest_chestnut   = handle_schematics.get_content_id_replaced( 'trees:chest_chestnut',   replacements );
+	cid.c_chest_pine       = handle_schematics.get_content_id_replaced( 'trees:chest_pine',       replacements );
+	cid.c_chest_spruce     = handle_schematics.get_content_id_replaced( 'trees:chest_spruce',     replacements );
+	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:sign_wall',      replacements );
+
+	cid.c_torch            = handle_schematics.get_content_id_replaced( 'default:torch',          replacements );
+	cid.c_torch_ceiling    = handle_schematics.get_content_id_replaced( 'default:torch_ceiling',  replacements );
+	cid.c_torch_wall       = handle_schematics.get_content_id_replaced( 'default:torch_wall',     replacements );
+
+	-- for roads
+	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:gravel',         replacements );
+
+	return cid;
+end
 
 -- place a schematic manually
 --
@@ -991,45 +1030,14 @@ handle_schematics.place_building_using_voxelmanip = function( pos, binfo, replac
 	-- the first two parameters are nil because we do not want a new replacement list to be generated
 	local replacements = handle_schematics.get_replacement_table( nil, nil, replacement_list );
 
-	-- only very few nodes are actually used from the cid table (content ids)
-	local cid = {};
-	cid.c_air              = minetest.get_content_id( 'air' );
-	cid.c_dirt             = handle_schematics.get_content_id_replaced( 'default:dirt',           replacements );
-	cid.c_dirt_with_grass  = handle_schematics.get_content_id_replaced( 'default:dirt_with_grass',replacements );
-	cid.c_sapling          = handle_schematics.get_content_id_replaced( 'default:sapling',        replacements );
-	cid.c_jsapling         = handle_schematics.get_content_id_replaced( 'default:junglesapling',  replacements );
-	cid.c_psapling         = handle_schematics.get_content_id_replaced( 'default:pine_sapling',   replacements );
-	cid.c_asapling         = handle_schematics.get_content_id_replaced( 'default:acacia_sapling', replacements );
-	cid.c_aspsapling       = handle_schematics.get_content_id_replaced( 'default:aspen_sapling',  replacements );
-	cid.c_savannasapling   = handle_schematics.get_content_id_replaced( 'mg:savannasapling',      replacements );
-	cid.c_pinesapling      = handle_schematics.get_content_id_replaced( 'mg:pinesapling',         replacements );
-	cid.c_plotmarker       = minetest.get_content_id('mg_villages:plotmarker');
-	cid.c_mob_spawner      = minetest.get_content_id('mg_villages:mob_spawner');
-
-	cid.c_chest            = handle_schematics.get_content_id_replaced( 'default:chest',          replacements );
-	cid.c_chest_locked     = handle_schematics.get_content_id_replaced( 'default:chest_locked',   replacements );
-	cid.c_chest_shelf      = handle_schematics.get_content_id_replaced( 'cottages:shelf',         replacements );
-	cid.c_chest_ash        = handle_schematics.get_content_id_replaced( 'trees:chest_ash',        replacements );
-	cid.c_chest_aspen      = handle_schematics.get_content_id_replaced( 'trees:chest_aspen',      replacements );
-	cid.c_chest_birch      = handle_schematics.get_content_id_replaced( 'trees:chest_birch',      replacements );
-	cid.c_chest_maple      = handle_schematics.get_content_id_replaced( 'trees:chest_maple',      replacements );
-	cid.c_chest_chestnut   = handle_schematics.get_content_id_replaced( 'trees:chest_chestnut',   replacements );
-	cid.c_chest_pine       = handle_schematics.get_content_id_replaced( 'trees:chest_pine',       replacements );
-	cid.c_chest_spruce     = handle_schematics.get_content_id_replaced( 'trees:chest_spruce',     replacements );
-	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:sign_wall',      replacements );
-
-	cid.c_torch            = handle_schematics.get_content_id_replaced( 'default:torch',          replacements );
-	cid.c_torch_ceiling    = handle_schematics.get_content_id_replaced( 'default:torch_ceiling',  replacements );
-	cid.c_torch_wall       = handle_schematics.get_content_id_replaced( 'default:torch_wall',     replacements );
-
-	-- for roads
-	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:gravel',         replacements );
+	-- get content id table
+	local cid = handle_schematics.get_cid_table( replacements );
 
 	local extranodes = {}
 	local extra_calls = { on_constr = {}, trees = {}, chests = {}, signs = {}, traders = {}, door_a = {}, door_b = {}, scaffolding = {}, clear_meta = {}, beds = {}, workplaces = {} };
 
 	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
-	local missing_nodes = generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
+	local missing_nodes = handle_schematics.generate_building(pos, minp, maxp, data, param2_data, a, extranodes, replacements, cid, extra_calls, pos.building_nr, pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
 
 	-- store the changed map data
 	vm:set_data(data);
