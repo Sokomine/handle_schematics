@@ -103,3 +103,6 @@ dofile(handle_schematics.modpath.."/place_buildings.lua")
 -- dofile(handle_schematics.modpath.."/fill_chest.lua")
 
 dofile(handle_schematics.modpath.."/nodes.lua")
+
+-- helper functions for finding flat land to build on
+dofile(handle_schematics.modpath.."/detect_flat_land_fast.lua");
