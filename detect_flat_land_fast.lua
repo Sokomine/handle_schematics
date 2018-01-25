@@ -378,3 +378,18 @@ handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp
 	-- set up doors properly (to whatever minetest_game currently demands)
 	handle_schematics.call_door_setup( extra_calls.door_b );
 end
+
+
+-- mark the place where a structure has been spawned as unusable (occupied)
+-- by setting it to a height of maxp.y+1
+handle_schematics.mark_flat_land_as_used = function(heightmap, minp, maxp, i, sizex, sizez)
+	local offset = maxp.x - minp.x - sizex + 1;
+	for dz = 1, sizez do
+		for dx = 1, sizex do
+			heightmap[ i ] = maxp.y+1;
+			i = i-1;
+		end
+		i = i - offset;
+	end
+	return heightmap;
+end
