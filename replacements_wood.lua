@@ -105,6 +105,10 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 			data[23] = 'doors:trapdoor';
 			data[24] = 'stairs:stair_inner_'..w;
 			data[25] = 'stairs:stair_outer_'..w;
+			data[26] = 'doors:door_wood_a';
+			data[27] = 'doors:door_wood_b';
+			data[28] = 'doors:hidden';
+
 		-- realtest has some further replacements
 		elseif( mod_prefix=='trees:' and w_post=='_planks' and t_post=='_log' ) then
 			data[12] = 'trees:'..v..'_ladder';
@@ -121,6 +125,27 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 			data[23] = 'hatches:'..v..'_hatch_opened_bottom';
 			data[24] = 'stairs:stair_inner_'..v..'_wood';
 			data[25] = 'stairs:stair_outer_'..v..'_wood';
+			data[26] = data[15];
+			data[27] = data[16];
+			data[28] = 'doors:hidden';
+		elseif( mod_prefix=='mcl_core:') then
+			data[11] = 'mcl_fences:fence_gate_'..v;
+			data[12] = 'mcl_core:ladder';
+			data[13] = 'mcl_doors:'..v..'_door_t_1'; -- TODO: wooden_door
+			data[14] = 'mcl_doors:'..v..'_door_t_2';
+			data[15] = 'mcl_doors:'..v..'_door_b_1';
+			data[16] = 'mcl_doors:'..v..'_door_b_2';
+			data[17] = 'mcl_books:bookshelf';
+			data[18] = 'mcl_chests:chest';
+			data[19] = 'mcl_chests:chest';
+			data[20] =   'stairs:stair_'..v..'upside_down';
+			data[21] =   'stairs:slab_'..v..'upside_down';
+			data[22] = 'doors:'..v..'_trapdoor_open';
+			data[23] = 'doors:'..v..'_trapdoor';
+			data[24] =   'stairs:stair_inner_'..v;
+			data[26] = data[15];
+			data[27] = data[16];
+			data[28] = data[13]; -- no way to decide automaticly which door top fits
 		end
 		replacements_group['wood'].data[ wood_name ] = data;
 
@@ -232,6 +257,31 @@ replacements_group['wood'].construct_wood_type_list = function()
 	replacements_group['wood'].add_material( {'mangrove','palm','conifer'},'trees:',  'wood_','',   'tree_','',  'leaves_','', 'sapling_','', 
 		'stairs:stair_','_wood',  'stairs:slab_','_wood',    'NONE','',            'NONE',''        );
 
+
+	-- MineClone2
+	local mineclone2_treelist = {"jungle","spruce","acacia","birch" };
+	replacements_group['wood'].add_material( mineclone2_treelist,
+		'mcl_core:', '', 'wood', '','tree', '','leaves','','sapling',
+		'mcl_stairs:stair_','wood', 'mcl_stairs:slab_','wood',
+		'mcl_fences:','_fence', 'mcl_fences:','_fence_gate' );
+	-- normal wood needs special treatment
+	replacements_group['wood'].add_material( {""},
+		'mcl_core:', '', 'wood', '','tree', '','leaves','','sapling',
+		'mcl_stairs:stair_','wood', 'mcl_stairs:slab_','wood',
+		'mcl_fences:','fence', 'mcl_fences:','fence_gate' );
+	-- the doors made out of wood do not follow the internal naming convention of MineClone2
+	replacements_group['wood'].data[ 'mcl_core:wood' ][13] = 'mcl_doors:wooden_door_t_1';
+	replacements_group['wood'].data[ 'mcl_core:wood' ][14] = 'mcl_doors:wooden_door_t_2';
+	replacements_group['wood'].data[ 'mcl_core:wood' ][15] = 'mcl_doors:wooden_door_b_1';
+	replacements_group['wood'].data[ 'mcl_core:wood' ][16] = 'mcl_doors:wooden_door_b_2';
+	replacements_group['wood'].data[ 'mcl_core:wood' ][26] = 'mcl_doors:wooden_door_b_1';
+	replacements_group['wood'].data[ 'mcl_core:wood' ][27] = 'mcl_doors:wooden_door_b_2';
+	replacements_group['wood'].data[ 'mcl_core:wood' ][28] = 'mcl_doors:wooden_door_t_1';
+	-- dark oak needs special treatment
+	replacements_group['wood'].add_material( {"dark"},
+		'mcl_core:', '', 'wood', '','tree', '','leaves','','sapling',
+		'mcl_stairs:stair_','wood', 'mcl_stairs:slab_','wood',
+		'mcl_fences:','_oak_fence', 'mcl_fences:','_oak_fence_gate' );
 
 	-- https://github.com/PilzAdam/farming_plus
 	-- TODO: this does not come with its own wood... banana and cocoa trees (only leaves, sapling and fruit)
