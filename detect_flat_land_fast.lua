@@ -183,6 +183,9 @@ handle_schematics.find_flat_land_for_building_with_border = function( heightmap,
 	-- translate index back into coordinates
 	local p = {x=minp.x+(i%chunksize)-1, y=heightmap[ i ], z=minp.z+math.floor(i/chunksize)};
 
+	-- the index in the heightmap
+	p.i = i;
+
 	-- p.plot_start and p.plot_end mark the total area of the entire plot,
 	-- including building and borders; perhaps this will be of intrest
 	-- later on (i.e. for clearing the place in margin_front from trees
@@ -252,7 +255,7 @@ end
 --   * yoffset      some schematics may have basements
 --   * initial_rotation some schematics need to be rotated first so that their
 --                  front shows up at the front. Allowed values: 0,1,2 or 3
--- TODO: add a return value (where, rotation, what, replacements)
+-- Returns information about where and how the building was placed.
 -- TODO: pass yoffset on to the search-for-place-function as well?
 -- TODO: read a larger voxelmanip area for tree modifications?
 handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp,
@@ -363,6 +366,7 @@ handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp
 
 	start_pos.bsizex = math.abs(p.build_end.x - start_pos.x)+1;
 	start_pos.bsizez = math.abs(p.build_end.z - start_pos.z)+1;
+	p.start_pos = start_pos;
 	-- last parameter false -> place dirt nodes instead of trying to keep the ground nodes
 	local missing_nodes = handle_schematics.generate_building(start_pos, minp2, maxp2, data, param2_data, a, extranodes, replacements_table, cid, extra_calls, start_pos.building_nr, start_pos.village_id, binfo, cid.c_gravel, keep_ground, scaffolding_only);
 
@@ -377,6 +381,8 @@ handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp
 	handle_schematics.call_on_construct( extra_calls.on_constr );
 	-- set up doors properly (to whatever minetest_game currently demands)
 	handle_schematics.call_door_setup( extra_calls.door_b );
+
+	return p;
 end
 
 
