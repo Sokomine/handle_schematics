@@ -117,6 +117,7 @@ handle_schematics.dig_node_using_dig_here_indicator = function(pos, clicker, ite
 	local nodes_wanted = minetest.deserialize( nodes_wanted_str );
 	local cid_air = minetest.get_content_id("air");
 
+	if( nodes_wanted ) then
 	for i=1,table.getn( nodes_wanted ) do
 		local p = {x=pos.x, y=pos.y-i, z=pos.z};
 		local node = minetest.get_node( p );
@@ -145,6 +146,7 @@ handle_schematics.dig_node_using_dig_here_indicator = function(pos, clicker, ite
 				end
 			end
 		end
+	end
 	end
 
 	-- we are done; the dig_here-indicator can be removed
