@@ -90,6 +90,8 @@ handle_schematics.enable_use_dirt_as_placeholder();
 -- of which ought to make a difference
 handle_schematics.enable_doors_open_closed();
 
+dofile(handle_schematics.modpath.."/backup_landscape.lua")
+
 -- uses build_chest.* namespace
 -- a chest for spawning buildings manually
 dofile(handle_schematics.modpath.."/build_chest.lua")
