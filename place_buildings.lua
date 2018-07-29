@@ -1091,12 +1091,6 @@ handle_schematics.place_building_from_file = function( start_pos, end_pos, build
 		return "Failed to import schematic. Only .mts and .we are supported!";
 	end
 
-	-- nodenames and scm_data_cache can be used directly;
-	-- the size dimensions need to be renamed
-	binfo.sizex = binfo.size.x;
-	binfo.sizez = binfo.size.z;
-	binfo.ysize = binfo.size.y;
-
 	-- this value has already been taken care of when determining start_pos
 	binfo.yoff  = 0;
 	-- file name of the scm; only used for error messages
