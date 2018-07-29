@@ -273,20 +273,25 @@ handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp
 		return;
 	end
 
+	if( not( binfo.yoff )) then
+		binfo.yoff = 0;
+	end
+
 	-- ships tend to swim on water
 	if( binfo.is_ship ) then
 		-- TODO: get water level
 		p.y             = 1;
-		p.build_start.y = 1;
+		-- the ship starts below the water surface
+		p.build_start.y = 1 + binfo.yoff;
 		p.build_end.y   = 1;
-		p.plot_start.y  = 1;
+		p.plot_start.y  = 1 + binfo.yoff;
 		p.plot_end.y    = 1;
 	end
 
 	local vm = minetest.get_voxel_manip()
 	local minp2, maxp2 = vm:read_from_map(
-		{x=p.build_start.x, y=p.build_start.y, z=p.build_start.z},
-		{x=p.build_end.x+1, y=maxp.y,          z=p.build_end.z+1});
+		{x=p.plot_start.x-1, y=p.plot_start.y-1, z=p.plot_start.z-1},
+		{x=p.plot_end.x+1, y=maxp.y,          z=p.plot_end.z+1});
 	local a = VoxelArea:new({MinEdge = minp2, MaxEdge = maxp2})
 	local data        = vm:get_data()
 	local param2_data = vm:get_param2_data();
@@ -328,13 +333,13 @@ handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp
 	end
 	end
 
+--[[
 	-- place 3 mese lamps so that buildings can be found easier while debugging
 	local cid_meselamp = minetest.get_content_id( "default:meselamp" );
 	for dy = p.y + 6, p.y + 26 do
 		data[ a:index( p.x,dy,p.z )] = cid_meselamp;
 	end
 	
---[[
 	local nodename="wool:white;"
 	if(     p.plot_rotation=="270") then nodename = "wool:cyan";
 	elseif( p.plot_rotation==  "0") then nodename = "wool:yellow";
