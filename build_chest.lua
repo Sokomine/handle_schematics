@@ -57,12 +57,19 @@ build_chest.end_pos_list = {};
 
 
 
-build_chest.read_building = function( building_name )
+build_chest.read_building = function( building_name, building_data )
+	if( not( building_data )) then
+		building_data = {};
+	end
+	if( not( build_chest.building[ building_name ] )) then
+		build_chest.building[ building_name ] = building_data;
+	end
 	-- read data
-	local res = handle_schematics.analyze_file( building_name, nil, nil );
+	local res = handle_schematics.analyze_file( building_name, nil, nil, build_chest.building[ building_name ]);
 	if( not( res )) then
 		return;
 	end
+--[[
 	build_chest.building[ building_name ].size           = res.size;	
 	build_chest.building[ building_name ].nodenames      = res.nodenames;	
 	build_chest.building[ building_name ].rotated        = res.rotated;	
@@ -73,7 +80,8 @@ build_chest.read_building = function( building_name )
 	build_chest.building[ building_name ].bed_list       = res.bed_list;
 	-- scm_data_cache is not stored as that would take up too much storage space
 	--build_chest.building[ building_name ].scm_data_cache = res.scm_data_cache;	
-
+--]]
+	build_chest.building[ building_name ] = res;
 	-- create a statistic about how often each node occours
 	build_chest.building[ building_name ].statistic      = handle_schematics.count_nodes( res );
 
