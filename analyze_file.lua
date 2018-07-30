@@ -1,3 +1,51 @@
+-- helper functions for ships submerged below water;
+-- this one fills a node with water (or more preceisely: ignore) if it
+-- has one water node at one side, or above, or is located at one side
+-- on a submerged level
+local floodfill_one_spot = function( res, air_id, ignore_table, x, y, z)
+	if( res.scm_data_cache[y][x][z]) then
+		return;
+	end
+	-- water flows in from the sides
+	if( x==1 or x==res.size.x or z==1 or z==res.size.z) then
+		res.scm_data_cache[y][x][z] = ignore_table;
+	-- or if there is at least one neighbour filled with water
+	elseif( res.scm_data_cache[y+1][x][z] == ignore_table
+	     or res.scm_data_cache[y][x+1][z] == ignore_table
+	     or res.scm_data_cache[y][x-1][z] == ignore_table
+	     or res.scm_data_cache[y][x+1][z] == ignore_table
+	     or res.scm_data_cache[y][x][z-1] == ignore_table
+	     or res.scm_data_cache[y][x][z+1] == ignore_table) then
+		res.scm_data_cache[y][x][z] = ignore_table;
+	end
+end
+
+
+-- check which parts of the schematic will have to be ignore due to beeing
+-- water flowing around
+local floodfill_with_ignore = function( res, air_id, ignore_table )
+	-- from water surface level downward
+	for y=-1*res.yoff + 1, 1, -1 do
+		for x=1, res.size.x do
+		for z=1, res.size.z do
+			floodfill_one_spot( res, air_id, ignore_table, x, y, z);
+		end
+		end
+	end
+	-- and now from the opposite side so that water may reach corners it
+	-- didn't reach previously
+	for y=-1*res.yoff + 1, 1, -1 do
+		for z=res.size.z, 1, -1 do
+		for x=res.size.x, 1, -1 do
+			floodfill_one_spot( res, air_id, ignore_table, x, y, z);
+		end
+		end
+	end
+	-- Note: For a complete fill, more runs would be necessary. With these
+	--       calls here, most of the nodes get covered. The small remaining
+	--       rest can be handled by real water.
+end
+
 -- read .mts (minetest schematic), .we (WorldEdit) and .schematic (MC schematic format) files
 -- 	file_name:     file name with full path but without file name exstension
 --	origin_offset: .we files may have this defined if their start is not at 0,0,0
@@ -128,6 +176,37 @@ handle_schematics.analyze_file = function( file_name, origin_offset, store_as_mt
 	if( build_chest and build_chest.add_entry and not(no_build_chest_entry) and building_data.scm) then
 		local modname = minetest.get_current_modname();
 		build_chest.add_entry( {'main', modname, modname, building_data.scm, file_name });
+	end
+
+	-- ships need ignore nodes around them so that the water around them doesn't get
+	-- replaced when they are put in the sea
+	if( res.is_ship and res.yoff and res.yoff < 0) then
+
+		-- we need to find out which node type represents air in this particular schematic
+		local air_id = 1;
+		local ignore_id = 0;
+		for i,n in ipairs( res.nodenames ) do
+			if( n == "air") then
+				air_id = i;
+			end
+			if( n == "ignore" or n == "mg:ignore" ) then
+				ignore_id = i;
+			end
+		end
+		-- if necessary add an ignore node
+		if( ignore_id == 0 ) then
+			table.insert( res.nodenames, "mg:ignore" );
+			ignore_id = #res.nodenames;
+		end
+
+		-- yoff is needed so that we know how far the ship is submerged
+		if( not( res.yoff )) then
+			res.yoff = 0;
+		end
+
+		local c_air = minetest.get_content_id("air");
+		local ignore = {ignore_id,0};
+		floodfill_with_ignore( res, air_id, ignore );
 	end
 
 	return res;
