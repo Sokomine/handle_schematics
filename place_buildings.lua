@@ -395,7 +395,9 @@ local function generate_building_what_to_place_here_and_how(t, node_content, new
 	end
 
 	-- TODO: there ought to be no error here....
-	if( not( t) or not( t[1] ) or not( new_nodes[ t[1]]) or not( new_nodes[ t[1]].new_content)) then
+	if( not( t) or not( t[1] ) or not( new_nodes[ t[1]])
+	 -- set air only if the new node is not of type ignore
+	 or (not( new_nodes[ t[1]].new_content) and not(new_nodes[ t[1] ].ignore))) then
 		return { new_content = cid.c_air, new_param2 = 0, n = {} };
 	end
 
