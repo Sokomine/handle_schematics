@@ -705,7 +705,11 @@ handle_schematics.generate_building = function(pos, minp, maxp, data, param2_dat
 					-- the existing node is not air, scaffolding, special scaffolding or a dig-here-indicator
 					-- -> the existing node needs to be digged
 					if(new_content and new_content ~= node_content
-					   and node_content ~= cid.c_air and node_content ~= c_scaffolding and node_content ~= c_scaffolding_empty) then
+					   and node_content ~= cid.c_air and node_content ~= c_scaffolding and node_content ~= c_scaffolding_empty
+					   -- if this is just a plant in a diffrent growth stage: ignore it
+					   and not( handle_schematics.player_can_provide[new_content] and
+					            handle_schematics.player_can_provide[new_content] ==
+						    handle_schematics.player_can_provide[node_content])) then
 						local h;
 						-- search upward for the first empty (air) node or dig-here-indicator and place a dig_here-indicator
 						for h=ay, maxp.y do
