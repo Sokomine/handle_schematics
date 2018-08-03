@@ -50,6 +50,8 @@ handle_schematics.place_node_using_support_setup = function(pos, clicker, itemst
 	local param2_wanted = meta:get_int( "param2_wanted" );
 
 	if( not(meta) or not(node_wanted) or node_wanted == "" or not(clicker)) then
+		-- if metadata is missing: set to air
+		minetest.set_node( pos, {name="air"});
 		return itemstack;
 	end
 
@@ -148,9 +150,19 @@ handle_schematics.dig_node_using_dig_here_indicator = function(pos, clicker, ite
 		end
 	end
 	end
-
 	-- we are done; the dig_here-indicator can be removed
 	minetest.set_node( pos, {name="air"});
+	-- the place where the dig_here indicator used to be may require a scaffolding node
+	if( nodes_wanted
+	  and nodes_wanted[#nodes_wanted]
+	  and nodes_wanted[#nodes_wanted][1]
+	  and nodes_wanted[#nodes_wanted][1] == pos.y
+	  and nodes_wanted[#nodes_wanted][2] ~= cid_air) then
+		local v = nodes_wanted[#nodes_wanted];
+		local p = pos;
+		minetest.set_node( p, {name="handle_schematics:support_setup"});
+		handle_schematics.setup_scaffolding( { x=p.x, y=p.y, z=p.z, node_wanted=v[2], param2_wanted=v[3] });
+	end
 	return itemstack;
 end
 
