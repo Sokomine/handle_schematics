@@ -96,6 +96,24 @@ handle_schematics.place_node_using_support_setup = function(pos, clicker, itemst
 	-- take the item from the player (provided it actually is a player and not a mob)
 	if( clicker.get_inventory ) then
 		clicker:get_inventory():remove_item("main", node_really_wanted.." 1");
+
+		-- if a bucket:bucket_* was used for placing water: return the empty bucket
+		if( node_really_wanted ~= "bucket:bucket_empty"
+		  and string.sub( node_really_wanted, 1, 14)=="bucket:bucket_") then
+			clicker:get_inventory():add_item("main", "bucket:bucket_empty 1");
+		end
+		-- if a seed is placed: hoe the ground below if needed (it might have returned
+		-- to base or dry state due to water not having been placed yet)
+		if( string.sub( node_really_wanted, 1, 13 )=="farming:seed_") then
+			local node_below = minetest.get_node( {x=pos.x, y=pos.y-1, z=pos.z});
+			if( node_below and node_below.name) then
+				local def = minetest.registered_nodes[ node_below.name ];
+				if( def and def.soil and def.soil.base and def.soil.base==node_below.name
+				  and def.soil.wet) then
+					minetest.set_node( {x=pos.x, y=pos.y-1, z=pos.z}, {name=def.soil.wet} );
+				end
+			end
+		end
 	end
 
 	minetest.remove_node( pos );
@@ -111,6 +129,8 @@ handle_schematics.dig_node_using_dig_here_indicator = function(pos, clicker, ite
 		return itemstack;
 	end
 
+	-- TODO: itemstack:get_tool_capabilities() can be used to check and wear down the tool
+--if( itemstack ) then minetest.chat_send_player("singleplayer", "You are trying to dig with "..minetest.serialize(itemstack:get_name()).." with tool capabilities: "..minetest.serialize(itemstack:get_tool_capabilities())); end
 	local meta = minetest.get_meta( pos );
 	local nodes_wanted_str = meta:get_string( "node_wanted_down_there");
 	if( not( nodes_wanted_str )) then
