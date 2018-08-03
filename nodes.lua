@@ -114,6 +114,18 @@ handle_schematics.place_node_using_support_setup = function(pos, clicker, itemst
 				end
 			end
 		end
+		-- avoid consuming two beds (because top and bottom both have the same drop)
+		if( string.sub( node_wanted, 1, 5 )=="beds:") then
+			if( string.sub( node_wanted, -7)=="_bottom") then
+				local top_pos = vector.add(pos, minetest.facedir_to_dir(param2_wanted));
+				local top_name = string.sub( node_wanted, 1, -8).."_top";
+				minetest.set_node(top_pos, {name = top_name, param2 = param2_wanted});
+			elseif( string.sub( node_wanted, -4)=="_top") then
+				local bot_pos = vector.add(pos, minetest.facedir_to_dir((param2_wanted+2)%4));
+				local bot_name = string.sub( node_wanted, 1, -5).."_bottom";
+				minetest.set_node(bot_pos, {name = bot_name, param2 = param2_wanted});
+			end
+		end
 	end
 
 	minetest.remove_node( pos );
