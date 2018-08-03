@@ -771,7 +771,10 @@ handle_schematics.generate_building = function(pos, minp, maxp, data, param2_dat
 
 					-- create a statistic of all missing nodes
 					if( node_content ~= new_content_wanted and node_content and new_content_wanted
-					   and new_content_wanted ~= cid.c_air and new_content_wanted ~= cid.c_ignore ) then
+					   and new_content_wanted ~= cid.c_air and new_content_wanted ~= cid.c_ignore
+					   and not( handle_schematics.player_can_provide[new_content] and
+					            handle_schematics.player_can_provide[new_content] ==
+						    handle_schematics.player_can_provide[node_content])) then
 						if( not( missing_nodes[ new_content_wanted ])) then
 							missing_nodes[ new_content_wanted ] = 1;
 						else
