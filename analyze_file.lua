@@ -100,13 +100,13 @@ handle_schematics.analyze_file = function( file_name, origin_offset, store_as_mt
 		-- (they have metadata instead)
 		res.on_constr = {};
 		res.after_place_node = {};
-		for _, name_text in res.nodenames do
+		for _, name_text in ipairs(res.nodenames) do
 			local node_def = handle_schematics.node_defined( name_text );
 			if( node_def and node_def.on_construct) then
-				table.insert( on_constr, name_text );
+				table.insert( res.on_constr, name_text );
 			end
 			if( node_def and node_def.after_place_node) then
-				table.insert( after_place_node, name_text );
+				table.insert( res.after_place_node, name_text );
 			end
 		end
 	end
