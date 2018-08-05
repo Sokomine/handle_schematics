@@ -386,7 +386,11 @@ handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp
 	handle_schematics.call_on_construct( extra_calls.on_constr );
 	-- set up doors properly (to whatever minetest_game currently demands)
 	handle_schematics.call_door_setup( extra_calls.door_b );
-
+	-- players expect chests to be filled with something for them
+	if( not( binfo.typ )) then
+		binfo.typ = "unkown";
+	end
+	handle_schematics.fill_chests( extra_calls.chests, nil, binfo.typ);
 	return p;
 end
 

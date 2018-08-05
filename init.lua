@@ -117,5 +117,8 @@ dofile(handle_schematics.modpath.."/place_buildings.lua")
 
 dofile(handle_schematics.modpath.."/nodes.lua")
 
+-- players expect chests etc. in spawned buildings to be filled
+dofile(handle_schematics.modpath.."/fill_chest.lua");
+
 -- helper functions for finding flat land to build on
 dofile(handle_schematics.modpath.."/detect_flat_land_fast.lua");
