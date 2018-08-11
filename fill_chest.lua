@@ -14,6 +14,20 @@ end
 -- things that can be found in private, not locked chests belonging to npc
 -- contains tables of the following structure: { node_name, probability (in percent, 100=always, 0=never), max_amount, repeat (for more than one stack) }
 
+-- shipwrecks are hard to find and loot; there has to be a higher reward
+ADD_RCC({"default:goldblock",              90, 99, 4, wreck=1});
+ADD_RCC({"default:diamondblock",           80, 10, 2, wreck=1});
+ADD_RCC({"default:copperblock",            95, 99, 5, wreck=1});
+ADD_RCC({"default:tinblock",               95, 99, 5, wreck=1});
+ADD_RCC({"default:bronzeblock",            95, 99, 5, wreck=1});
+ADD_RCC({"default:mese",                   70, 60, 2, wreck=1});
+ADD_RCC({"default:steel_ingot",            80, 99, 3, wreck=1});
+ADD_RCC({"default:copper_ingot",           80, 99, 5, wreck=1});
+ADD_RCC({"default:tin_ingot",              80, 99, 4, wreck=1});
+ADD_RCC({"default:bronze_ingot",           90, 99, 4, wreck=1});
+ADD_RCC({"default:diamond",                90, 99, 2, wreck=1});
+ADD_RCC({"default:mese_crystal",           90, 99, 2, wreck=1});
+
 ADD_RCC({"default:pick_stone",             10,  1, 3, farm_tiny=1, farm_full=1, shed=1, lumberjack=1, hut=1, chest_work=1, lumberjack=1 }); 
 ADD_RCC({"default:pick_steel",              5,  1, 2, forge=1 }); 
 ADD_RCC({"default:pick_mese",               2,  1, 2, forge=1, lumberjack=1 }); 
