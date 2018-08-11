@@ -9,7 +9,11 @@
 --                         lookfor_z_dim x lookfor_x_dim nodes are flat
 -- minheight and maxheight determine weather places will be acceptable
 --   and returned; use it to i.e. get no places under water
-handle_schematics.find_flat_land_get_candidates_fast = function( heightmap, minp, maxp, lookfor_x_dim, lookfor_z_dim, minheight, maxheight )
+-- allow_floating          ships and submarines do not really require the
+--                         ground below them to be flat; shipwrecks may sink
+--                         partly into the ground; other sunken structures
+--                         may need this to be set to false
+handle_schematics.find_flat_land_get_candidates_fast = function( heightmap, minp, maxp, lookfor_x_dim, lookfor_z_dim, minheight, maxheight, allow_floating )
 
 	-- return empty result if search is invalid
 	if(  lookfor_x_dim < 1
@@ -53,7 +57,7 @@ handle_schematics.find_flat_land_get_candidates_fast = function( heightmap, minp
 
 		-- water just has to be deep enough
 		if(( height==lastheight and ax>minp.x)
-		   or (height<0 and height<=maxheight and lastheight<=maxheight and ax>minp.x)) then
+		   or (allow_floating and height<0 and height<=maxheight and lastheight<=maxheight and ax>minp.x)) then
 			count = count+1;
 		else
 			count = 1;
@@ -70,7 +74,7 @@ handle_schematics.find_flat_land_get_candidates_fast = function( heightmap, minp
 		end
 		-- it is enough to remember the last row in zrun
 		if(( height==height2 and az>minp.z)
-		   or (height<0 and height<=maxheight and height2<=maxheight and az>minp.z)) then
+		   or (allow_floating and height<0 and height<=maxheight and height2<=maxheight and az>minp.z)) then
 			zrun[ ax ] = zrun[ ax ]+1;
 		else
 			zrun[ ax ] = 1;
@@ -124,7 +128,8 @@ end
 handle_schematics.find_flat_land_for_building_with_border = function( heightmap, minp, maxp,
 	sizex, sizez, minheight, maxheight,
 	margin_front, margin_back, margin_right, margin_left,
-	initial_rotation
+	initial_rotation,
+	allow_floating
 	)
 
 	-- handle initial rotation (orients) if our building is rotated by 90 or 270 degree
@@ -140,7 +145,7 @@ handle_schematics.find_flat_land_for_building_with_border = function( heightmap,
 	-- find candidates
 	local res = handle_schematics.find_flat_land_get_candidates_fast( heightmap, minp, maxp,
 		sizex_full, sizez_full,
-		minheight, maxheight );
+		minheight, maxheight, allow_floating );
 
 	--print("Found normal: "..tostring( #res.places_x ).." and rotated: "..tostring( #res.places_z ));
 	-- nothing suitable found? then abort
@@ -262,13 +267,14 @@ handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp
 	sizex, sizez, minheight, maxheight,
 	margin_front, margin_back, margin_right, margin_left,
 	filename, replacements, yoffset, initial_rotation,
-	binfo
+	binfo,
+	allow_floating
 	)
 
 	-- find a flat area of the required size
 	local p = handle_schematics.find_flat_land_for_building_with_border( heightmap, minp, maxp,
 		sizex, sizez, minheight, maxheight,
-		margin_front, margin_back, margin_right, margin_left, initial_rotation );
+		margin_front, margin_back, margin_right, margin_left, initial_rotation, allow_floating );
 	if( not( p )) then
 		return;
 	end
