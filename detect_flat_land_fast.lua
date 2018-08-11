@@ -294,6 +294,51 @@ handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp
 		p.plot_end.y    = 1;
 	end
 
+	-- shipwrecks need to rest on the ground (more or less); we can also ignore
+	-- the border around them
+	if( binfo.is_submerged ) then
+		-- first step: search for all nodes at the bottom of the schematic
+		-- where the shipwreck connects to the ground - and see how deep
+		-- we have to go so that each of these nodes rests on a ground node
+		local chunksize = maxp.x - minp.x + 1;
+		local target_height = 1;
+		for x=1, binfo.sizex do
+		for z=1, binfo.sizez do
+			if(  binfo.scm_data_cache[1][x][z]
+			 and binfo.scm_data_cache[1][x][z][1]~=c_air) then
+				local nx, nz;
+				if(     p.build_rotation=="0" ) then
+					nx = p.build_start.x+x-1;
+					nz = p.build_start.z+z-1;
+				elseif( p.build_rotation=="90") then
+					nx = p.build_start.x+z-1;
+					nz = p.build_end.z-x+1;
+				elseif( p.build_rotation=="180") then
+					nx = p.build_end.x-x+1;
+					nz = p.build_end.z-z+1;
+				else
+					nx = p.build_end.x-z+1;
+					nz = p.build_start.z+x-1;
+				end
+				local h = heightmap[ (nz-minp.z)*chunksize + (nx-minp.x)];
+				if( h and h>minp.y and h<target_height ) then
+					target_height = h;
+				end
+			end
+		end
+		end
+		-- there will be water or scenery there; no need to clean the area from
+		-- trees or leaves
+		p.build_start.y = target_height + binfo.yoff;
+		p.build_end.y   = target_height;
+		p.plot_start.y  = target_height + binfo.yoff;
+		p.plot_end.y    = target_height;
+		p.y             = target_height;
+		p.plot_start    = p.build_start;
+		p.plot_end      = p.build_end;
+	end
+
+
 	local vm = minetest.get_voxel_manip()
 	local minp2, maxp2 = vm:read_from_map(
 		{x=p.plot_start.x-1, y=p.plot_start.y-1, z=p.plot_start.z-1},
@@ -330,13 +375,17 @@ handle_schematics.place_schematic_on_flat_land = function( heightmap, minp, maxp
 	local replacements_table = handle_schematics.get_replacement_table( nil, nil, replacements );
 	local cid = handle_schematics.get_cid_table( replacements_table );
 
-	-- remove trees, leaves, snow etc.
-	for ax=p.plot_start.x, p.plot_end.x do
-	for az=p.plot_start.z, p.plot_end.z do
-	for ay=p.y+2,          maxp.y do
-		data[ a:index( ax, ay, az )] = cid.c_air;
-	end
-	end
+	-- clear area above ground for buildigns placed there; do not do this
+	-- for shipwrecks and the like
+	if( not( binfo.is_submerged )) then
+		-- remove trees, leaves, snow etc.
+		for ax=p.plot_start.x, p.plot_end.x do
+		for az=p.plot_start.z, p.plot_end.z do
+		for ay=p.y+2,          maxp.y do
+			data[ a:index( ax, ay, az )] = cid.c_air;
+		end
+		end
+		end
 	end
 
 --[[

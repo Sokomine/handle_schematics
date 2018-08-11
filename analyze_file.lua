@@ -185,7 +185,7 @@ handle_schematics.analyze_file = function( file_name, origin_offset, store_as_mt
 
 	-- ships need ignore nodes around them so that the water around them doesn't get
 	-- replaced when they are put in the sea
-	if( res.is_ship and res.yoff and res.yoff < 0) then
+	if( (res.is_submerged) or (res.is_ship and res.yoff and res.yoff < 0)) then
 
 		-- we need to find out which node type represents air in this particular schematic
 		local air_id = 1;
@@ -209,9 +209,28 @@ handle_schematics.analyze_file = function( file_name, origin_offset, store_as_mt
 			res.yoff = 0;
 		end
 
-		local c_air = minetest.get_content_id("air");
 		local ignore = {ignore_id,0};
-		floodfill_with_ignore( res, air_id, ignore );
+		if( res.is_submerged) then
+			-- set all nodes that are undefined or ignore to ignore
+			-- so that the building/shipwreck will replace no water
+			-- or sand etc.
+			local count_ignore = 0;
+			for y=1, res.size.y do
+			for x=1, res.size.x do
+			for z=1, res.size.z do
+				if( not(res.scm_data_cache[y][x][z])
+				  or res.scm_data_cache[y][x][z][1]==air_id) then
+					res.scm_data_cache[y][x][z] = {ignore_id,0};
+					count_ignore = count_ignore + 1;
+				end
+			end
+			end
+			end
+		else
+			-- flood from the outside inward for all levels below/at
+			-- water surface level
+			floodfill_with_ignore( res, air_id, ignore );
+		end
 	end
 
 	return res;
