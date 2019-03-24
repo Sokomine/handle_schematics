@@ -121,7 +121,7 @@ dofile(handle_schematics.modpath.."/backup_landscape.lua")
 dofile(handle_schematics.modpath.."/build_chest.lua")
 -- makes the replacements from replacements_group.* available to the build chest
 dofile(handle_schematics.modpath.."/build_chest_handle_replacements.lua");
--- creates 2d previews of the schematic from left/right/back/front/top
+-- creates 2d previews of the schematic from left/right/back/front/top/floor
 dofile(handle_schematics.modpath.."/build_chest_preview_image.lua");
 -- reads a file and adds the files listed there as menu entries
 dofile(handle_schematics.modpath.."/build_chest_add_schems_from_file.lua");
