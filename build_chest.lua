@@ -256,7 +256,7 @@ handle_schematics.update_formspec_save_building = function( formspec, meta, play
 				-- "1" means the building without floor; here, "1" means a floating building
 				"label[2,3.8;The hight offset sets how deep your building will be burried in the ground. Examples:]"..
 					"label[2.5,4.1;A value of -4 will include a cellar which extends 4 nodes below this construction sign.]"..
-					"label[2.5,4.4;A value of -1 will include the floor below the chest, but no cellar.]"..
+					"label[2.5,4.4;A value of -1 will include the floor below the sign, but no cellar.]"..
 					"label[2.5,4.7;A positive value will make your building float in the air.]"..
 				"label[2,5.15;Add height offset:]"..
 					"field[6,5.5;1,0.5;save_as_yoff;;0]"..
