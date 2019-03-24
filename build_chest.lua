@@ -1021,6 +1021,10 @@ minetest.register_node("handle_schematics:build", {
         on_metadata_inventory_put = function(pos, listname, index, stack, player)
             return build_chest.on_metadata_inventory_put( pos, listname, index, stack, player );
         end,
+
+        -- make resistant against TNT etc.
+        on_blast = function(pos, intensity)
+        end,
 })
 
 
