@@ -647,6 +647,11 @@ build_chest.on_receive_fields = function(pos, formname, fields, player)
 			"accepts input from its owner or other players who can build here.");
 		return;
 	end
+	-- no owner? then the player becomes the new owner
+	if( not( owner ) or owner=="") then
+		owner = pname
+		meta:set_string("owner", pname )
+	end
 
 	local building_name = meta:get_string('building_name' );
 	-- the statistic is needed for all the replacements later on as it also contains the list of nodenames
@@ -1026,6 +1031,11 @@ minetest.register_node("handle_schematics:build", {
         on_blast = function(pos, intensity)
         end,
 })
+
+-- stores metadata and really ought not to be pushed around
+if( minetest.get_modpath("mesecon") and mesecon) then
+	mesecon.register_mvps_stopper("handle_schematics:build")
+end
 
 
 -- a player clicked on something in a formspec he was shown
