@@ -923,14 +923,26 @@ end
 
 
 
-minetest.register_node("handle_schematics:build", { --TODO
+minetest.register_node("handle_schematics:build", {
 	description = "Building-Spawner",
-	tiles = {"default_chest_side.png", "default_chest_top.png", "default_chest_side.png",
-		"default_chest_side.png", "default_chest_side.png", "default_chest_front.png"},
+	tiles = {"default_wood.png^[transformR90", "default_wood.png^[transformR90",
+		 "default_wood.png^[transformR90", "default_wood.png^[transformR90",
+		 "default_wood.png^[transformR90", "default_wood.png^grundriss.png^[transformR90"},
+
+	drawtype = "nodebox",
+        node_box = {
+                type = "fixed",
+                fixed = {
+                        {-0.5, -0.5+3/16, 0.5-3/16, 0.5, 0.5, 0.5-1/16},
+                        {-0.5+1/16, -0.5,      0.5-1/16, -0.5+3/16, 0.5, 0.5     },
+                        { 0.5-3/16, -0.5,      0.5-1/16,  0.5-1/16, 0.5, 0.5     },
+                },
+        },
+        sunlight_propagates = true,
+
 --        drawtype = 'signlike',
 --        paramtype = "light",
 --        paramtype2 = "wallmounted",
---        sunlight_propagates = true,
 --        walkable = false,
 --        selection_box = {
 --                type = "wallmounted",
