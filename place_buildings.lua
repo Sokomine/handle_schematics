@@ -1089,13 +1089,15 @@ end
 
 -- places a building read from file "building_name" on the map between start_pos and end_pos using luavoxelmanip
 -- returns error message on failure and nil on success
-handle_schematics.place_building_from_file = function( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, keep_ground, scaffolding_only, plotmarker_pos )
+handle_schematics.place_building_from_file_or_cache = function( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, keep_ground, scaffolding_only, plotmarker_pos, binfo )
 	--print ("scaffolding place_building_from_file: "..minetest.serialize( scaffolding_only ));
 	if( not( building_name )) then
 		return "No file name given. Cannot find the schematic.";
 	end
 
-	local binfo = handle_schematics.analyze_file( building_name, nil, nil );
+	if(not(binfo)) then
+		binfo = handle_schematics.analyze_file( building_name, nil, nil );
+	end
 	if( not( binfo )) then
 		return "Failed to import schematic. Only .mts and .we are supported!";
 	end

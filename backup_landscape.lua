@@ -113,7 +113,7 @@ handle_schematics.restore_landscape = function( meta, player_name, force_place, 
 		local axis   = build_chest.building[ building_name ].axis;
 		local no_plotmarker = true;
 		local replacement_list = {};
-		local error_msg = handle_schematics.place_building_from_file( start_pos, end_pos, filename, replacement_list, "180", 3, 1, no_plotmarker, false, true, pos );
+		local error_msg = handle_schematics.place_building_from_file_or_cache( start_pos, end_pos, filename, replacement_list, "180", 3, 1, no_plotmarker, false, true, pos, nil );
 		if( error_msg ) then
 			error_msg = 'Error: '..tostring( error_msg );
 			minetest.chat_send_player( player_name, error_msg );

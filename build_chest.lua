@@ -64,8 +64,26 @@ build_chest.read_building = function( building_name, building_data )
 	if( not( build_chest.building[ building_name ] )) then
 		build_chest.building[ building_name ] = building_data;
 	end
-	-- read data
-	local res = handle_schematics.analyze_file( building_name, nil, nil, build_chest.building[ building_name ]);
+
+	local res = {};
+	-- use a generator function instead of a file;
+	-- WARNING: This generates a new building each time this function is called!
+	if( building_data.generator
+	 or (build_chest.building[ building_name ] and build_chest.building[ building_name ].generator)) then
+		print("USING generator function...");
+		-- TODO: those have to be read via the interface somehow...
+		local sizex = 11;
+		local sizez = 14;
+		local sizey = 20;
+		local seed = 2;
+		local fake_vm = handle_schematics.create_fake_vm(sizex, sizey, sizez);
+		fake_vm.generator = building_data.generator;
+		res = build_chest.building[ building_name ].generator({x=0,y=1,z=0}, sizex, sizez, sizey, seed, fake_vm );
+		build_chest.building[ building_name ] = res;
+	else
+		-- read data
+		res = handle_schematics.analyze_file( building_name, nil, nil, build_chest.building[ building_name ]);
+	end
 	if( not( res )) then
 		return;
 	end
@@ -156,7 +174,9 @@ build_chest.show_size_data = function( building_name )
 	local size = build_chest.building[ building_name ].size;
 	-- the full path and name of the building is often too long and provides information about the filesystem, which is unsuitable for players
 	local shortened_building_name = building_name;
-	shortened_building_name = string.sub( building_name, string.len( building_name ) + 2 - string.find( string.reverse(building_name), "/", 1, true ));
+	if( string.find( string.reverse(building_name), "/", 1, true )) then
+		shortened_building_name = string.sub( building_name, string.len( building_name ) + 2 - string.find( string.reverse(building_name), "/", 1, true ));
+	end
 
 	-- show which building has been selected
 	return "label[0.3,9.5;Selected building:]"..
@@ -760,7 +780,7 @@ mirror = nil;
 		if( not( minetest.check_player_privs( pname, {creative=true}))) then
 			use_scaffolding = true;
 		end
-		fields.error_msg = handle_schematics.place_building_from_file( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, false, use_scaffolding, pos );
+		fields.error_msg = handle_schematics.place_building_from_file_or_cache( start_pos, end_pos, building_name, replacement_list, rotate, axis, mirror, no_plotmarker, false, use_scaffolding, pos, build_chest.building[ building_name ] );
 		if( fields.error_msg ) then
 			fields.error_msg = 'Error: '..tostring( fields.error_msg );
 		end

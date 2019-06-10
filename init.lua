@@ -142,3 +142,7 @@ dofile(handle_schematics.modpath.."/fill_chest.lua");
 
 -- helper functions for finding flat land to build on
 dofile(handle_schematics.modpath.."/detect_flat_land_fast.lua");
+
+-- provide an interface so that functions that generate houses/structures
+-- can do so for handle_schematics
+dofile(handle_schematics.modpath.."/interface_generator_functions.lua");
