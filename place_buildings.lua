@@ -454,11 +454,11 @@ local function generate_building_what_to_place_here_and_how(t, node_content, new
 			param2 = n.change_param2[ param2 ];
 		end
 
-		if(     mirror_x ) then
+		if(     mirror_x and param2<24) then
 			param2 = handle_schematics.rotation_table[ n.paramtype2 ][ param2+1 ][ pos.brotate+1 ][ 2 ];
-		elseif( mirror_z ) then
+		elseif( mirror_z and param2<24) then
 			param2 = handle_schematics.rotation_table[ n.paramtype2 ][ param2+1 ][ pos.brotate+1 ][ 3 ];
-		else
+		elseif( param2 < 24) then
 			param2 = handle_schematics.rotation_table[ n.paramtype2 ][ param2+1 ][ pos.brotate+1 ][ 1 ];
 		end
 	end
