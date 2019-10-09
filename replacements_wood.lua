@@ -211,9 +211,15 @@ replacements_group['wood'].construct_wood_type_list = function()
 
 	-- https://github.com/VanessaE/moretrees
 	-- minus the jungletree (already in default)
-	local moretrees_treelist = {"beech","apple_tree","oak","sequoia","birch","palm","spruce","pine","willow","acacia","rubber_tree","fir" };
+	local mt_pre_stair = "stairs:stair_moretrees_" -- moretrees stair prefix
+	local mt_pre_slab  = "stairs:slab_moretrees_"
+	if(minetest.get_modpath("moreblocks")) then
+		mt_pre_stair = "moretrees:stair_"
+		mt_pre_slab  = "moretrees:slab_"
+	end
+	local moretrees_treelist = {"beech","apple_tree","oak","sequoia","birch","palm","spruce","willow","rubber_tree","fir" }; -- "pine", "acacia"
 	replacements_group['wood'].add_material( moretrees_treelist,  'moretrees:', '', '_planks', '','_trunk', '','_leaves','','_sapling',
-		'moretrees:stair_','_planks', 'moretrees:slab_','_planks',   'NONE','',  'NONE','');
+		mt_pre_stair,'_planks', mt_pre_slab,'_planks', 'NONE','',  'NONE','');
 	
 
 	-- https://github.com/tenplus1/ethereal
