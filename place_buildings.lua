@@ -977,6 +977,46 @@ handle_schematics.get_cid_table = function( replacements )
 	-- for roads
 	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:gravel',         replacements );
 
+	-- additional entries from mg_villages
+	cid.c_ignore = minetest.get_content_id( 'ignore' );
+	cid.c_stone  = minetest.get_content_id( 'default:stone');
+	cid.c_snow   = minetest.get_content_id( 'default:snow');
+	cid.c_snowblock   = minetest.get_content_id( 'default:snowblock');
+	cid.c_dirt_with_snow  = minetest.get_content_id( 'default:dirt_with_snow' );
+	cid.c_desert_sand = minetest.get_content_id( 'default:desert_sand' ); -- PM v
+	cid.c_desert_stone  = minetest.get_content_id( 'default:desert_stone');
+	cid.c_silver_sand = minetest.get_content_id( 'default:silver_sand' ); -- PM v
+	cid.c_silver_sandstone  = minetest.get_content_id( 'default:silver_sandstone');
+	cid.c_sand = minetest.get_content_id( 'default:sand' );
+	cid.c_tree = minetest.get_content_id( 'default:tree');
+	cid.c_jtree = minetest.get_content_id( 'default:jungletree');
+	cid.c_ptree = minetest.get_content_id( 'default:pine_tree');
+	cid.c_atree    = minetest.get_content_id( 'default:acacia_tree');
+	cid.c_asptree    = minetest.get_content_id( 'default:aspen_tree');
+	cid.c_water = minetest.get_content_id( 'default:water_source'); -- PM ^
+	cid.c_stone_with_coal = minetest.get_content_id( 'default:stone_with_coal');
+	cid.c_sandstone       = minetest.get_content_id( 'default:sandstone');
+
+	cid.c_msnow_1  = minetest.get_content_id( 'moresnow:snow_top' );
+	cid.c_msnow_2  = minetest.get_content_id( 'moresnow:snow_fence_top');
+	cid.c_msnow_3  = minetest.get_content_id( 'moresnow:snow_stair_top');
+	cid.c_msnow_4  = minetest.get_content_id( 'moresnow:snow_slab_top');
+	cid.c_msnow_5  = minetest.get_content_id( 'moresnow:snow_panel_top');
+	cid.c_msnow_6  = minetest.get_content_id( 'moresnow:snow_micro_top');
+	cid.c_msnow_7  = minetest.get_content_id( 'moresnow:snow_outer_stair_top');
+	cid.c_msnow_8  = minetest.get_content_id( 'moresnow:snow_inner_stair_top');
+	cid.c_msnow_9  = minetest.get_content_id( 'moresnow:snow_ramp_top');
+	cid.c_msnow_10 = minetest.get_content_id( 'moresnow:snow_ramp_outer_top');
+	cid.c_msnow_11 = minetest.get_content_id( 'moresnow:snow_ramp_inner_top');
+	cid.c_msnow_soil=minetest.get_content_id( 'moresnow:snow_soil' );
+
+	cid.c_ice      = minetest.get_content_id( 'default:ice' );
+
+	if( minetest.get_modpath('ethereal')) then
+		cid.c_ethereal_clay_red    = minetest.get_content_id( 'bakedclay:red' );
+		cid.c_ethereal_clay_orange = minetest.get_content_id( 'bakedclay:orange' );
+	end
+
 	return cid;
 end
 
