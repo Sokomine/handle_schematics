@@ -30,6 +30,34 @@ handle_schematics.node_defined = function( node_name )
 end
 
 
+-- this is mostly for the build chest so that the final material beeing used can be shown
+handle_schematics.apply_global_replacements = function(replacements, nodenames)
+	-- change existing replacements where needed
+	for i, repl in ipairs(replacements) do
+		if(handle_schematics.global_replacement_table[ repl[2] ]) then
+			replacements[i][2] = handle_schematics.global_replacement_table[ repl[2] ]
+		end
+	end
+	-- add replacement for nodenames that are not yet covered
+	for k, name in ipairs(nodenames) do
+		-- if the node is to be replaced
+		if(handle_schematics.global_replacement_table[name]) then
+			local found = false
+			for i, repl in ipairs(replacements) do
+				if(repl[1] == name) then
+					found = true
+					break
+				end
+			end
+			if(not(found)) then
+				table.insert(replacements, {name, handle_schematics.global_replacement_table[name]})
+			end
+		end
+	end
+	return replacements
+end
+
+
 -- applies all necessary replacements:
 --  * discontinued chests from cottages
 --  * changed nodes in minetest_game such as doors etc.
@@ -39,6 +67,7 @@ end
 --    new_materials. If new_materials is empty, random replacements will used.
 --    Structure of new_materials = {"wood":new_wood_material,
 --      "roof":new_roof_material, "farming":new_cotton_replacement}
+-- (currently only used by handle_schematics/detect_flat_land_fast.lua)
 handle_schematics.replace_randomized = function( replacements, new_materials )
 
 	if( not( replacements )) then
@@ -51,9 +80,6 @@ handle_schematics.replace_randomized = function( replacements, new_materials )
 	table.insert( replacements, {"cottages:chest_private", "default:chest"});
 	table.insert( replacements, {"cottages:chest_work",    "default:chest"});
 	table.insert( replacements, {"cottages:chest_storage", "default:chest"});
-
-	-- change old doors and other nodes that havve been changed to new ones
-	replacements = replacements_group['discontinued_nodes'].replace( replacements );
 
 	-- replace the wood
 	if( not(new_materials['wood']) or not( minetest.registered_nodes[ new_materials['wood'] ])) then
