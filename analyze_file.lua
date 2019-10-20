@@ -233,5 +233,13 @@ handle_schematics.analyze_file = function( file_name, origin_offset, store_as_mt
 		end
 	end
 
+	-- some node names need to be replaced right here after reading the file
+	-- because further replacement functions rely on consistant node names
+	for i, name in ipairs(nodenames) do
+		if( replacements_group["after_read_file"][ name ]) then
+			nodenames[ i ] = replacements_group["after_read_file"][ name ]
+		end
+	end
+
 	return res;
 end

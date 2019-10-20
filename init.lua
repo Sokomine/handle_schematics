@@ -84,9 +84,20 @@ dofile(handle_schematics.modpath.."/handle_schematics_meta.lua");
 -- these functions are responsible for the optional dependencies; they check
 -- which nodes are available and may be offered as possible replacements
 replacements_group = {};
+
+-- these replacements need to be applied immediately after a file is read
+-- (because else the node names would be incompatible for the other possible replacements)
+dofile(handle_schematics.modpath.."/replacements_after_read_file.lua")
+
 -- the replacement groups do add some non-ground nodes; needed by mg_villages
 replacements_group.node_is_ground = {}
 dofile(handle_schematics.modpath.."/replacements_discontinued_nodes.lua")
+
+-- moreblocks registers so many aliasses that it is a pain to move from a moreblocks world to one without;
+-- also, replacement functions expect stairs:stair_* and not moreblock names;
+-- therefore, repalce moreblock names with stairs:* names after reading the file
+dofile(handle_schematics.modpath.."/replacements_moreblocks.lua")
+
 dofile(handle_schematics.modpath.."/replacements_wood.lua")
 dofile(handle_schematics.modpath.."/replacements_realtest.lua")
 dofile(handle_schematics.modpath.."/replacements_mineclone2.lua")
