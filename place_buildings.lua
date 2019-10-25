@@ -1,9 +1,9 @@
 -- TODO: this function also occours in replacements.lua
 handle_schematics.get_content_id_replaced = function( node_name, replacements )
-	if( not( node_name ) or not( replacements ) or not(replacements.table )) then
+	if( not( node_name )) then
 		return minetest.get_content_id( 'ignore' );
 	end
-	if( replacements.table[ node_name ]) then
+	if( replacements and replacements.table and replacements.table[ node_name ]) then
 		return minetest.get_content_id( replacements.table[ node_name ] );
 	else
 		return minetest.get_content_id( node_name );
