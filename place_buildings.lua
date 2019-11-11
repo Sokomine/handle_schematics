@@ -1,13 +1,20 @@
--- TODO: this function also occours in replacements.lua
 handle_schematics.get_content_id_replaced = function( node_name, replacements )
 	if( not( node_name )) then
 		return minetest.get_content_id( 'ignore' );
 	end
+	local new_name = node_name
 	if( replacements and replacements.table and replacements.table[ node_name ]) then
-		return minetest.get_content_id( replacements.table[ node_name ] );
-	else
-		return minetest.get_content_id( node_name );
+		new_name = replacements.table[ node_name ];
 	end
+	if(minetest.registered_aliases[ new_name ]) then
+		new_name = minetest.registered_aliases[ new_name ]
+	end
+	-- try the original name if the new one doesn't exist
+	if(not(minetest.registered_nodes[ new_name ])
+	   and minetest.registered_nodes[ node_name ]) then
+		new_name = node_name
+	end
+	return minetest.get_content_id( new_name );
 end
 
 -- either uses get_node_or_nil(..) or the data from voxelmanip
