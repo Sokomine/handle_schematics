@@ -161,8 +161,8 @@ ADD_RCC({"quartz:quartz_crystal",          80,  1,  1, library=1, ship=1 });
 
 ADD_RCC({"screwdriver:screwdriver",        80,  1,  1, chest_work=1 });
 
-ADD_RCC({"unified_inventory:bag_large",    80,  1,  1, chest_private=1, chest_storage=2 });
-ADD_RCC({"unified_inventory:bag_medium",   80,  1,  1, chest_private=1, chest_storage=2 });
+ADD_RCC({"unified_inventory:bag_large",     5,  1,  1, chest_private=1, chest_storage=2 });
+ADD_RCC({"unified_inventory:bag_medium",   10,  1,  1, chest_private=1, chest_storage=2 });
 ADD_RCC({"unified_inventory:bag_small",    80,  1,  1, tavern=1, inn=1, chest_work=1, chest_private=1, ship=1 });
 
 
