@@ -3,10 +3,16 @@
 
 handle_schematics.random_chest_content = {};
 
+-- increase this value if you think that the generated chests contain too many items
+handle_schematics.random_chest_probability_factor = 200
+
 -- add random chest content
 local ADD_RCC = function( data )
 	if( data and #data>3 and ( minetest.registered_nodes[ data[1] ] or minetest.registered_items[ data[1] ]) ) then
-		data.chest_default = 1;
+		-- shipwrecks contain more valuable items (they transport ingots and blocks)
+		if(not(data.wreck)) then
+			data.chest_default = 1;
+		end
 		table.insert( handle_schematics.random_chest_content, data );
 	end
 end
@@ -241,7 +247,7 @@ handle_schematics.fill_one_chest_random = function( pos, pr, typ, typ2, inv, inv
 			-- to avoid too many things inside a chest, lower probability
 			if(     count<30 -- make sure it does not get too much and there is still room for a new stack
 			 and (v[ typ ] or (typ2 and v[ typ2 ]))
-			 and inv_size and inv_size > 0 and v[ 2 ] > pr:next( 1, 200 )) then
+			 and inv_size and inv_size > 0 and v[ 2 ] > pr:next( 1, handle_schematics.random_chest_probability_factor )) then
 	
 				--inv:add_item('main', v[ 1 ].." "..tostring( math.random( 1, tonumber(v[ 3 ]) )));
 				-- add itemstack at a random position in the chests inventory 
