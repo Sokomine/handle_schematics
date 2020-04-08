@@ -52,12 +52,26 @@ handle_schematics.mirrored_node = {};
 
 handle_schematics.add_mirrored_node_type = function( name, mirrored_name )
 	handle_schematics.mirrored_node[ name ] = mirrored_name;
-	local id    = minetest.get_content_id( name );
-	local id_mi = minetest.get_content_id( mirrored_name );
-	local c_ignore = minetest.get_content_id( 'ignore' );
-	if( id and id_mi and id ~= c_ignore  and id_mi ~= c_ignore ) then
-		handle_schematics.mirrored_node[ id ] = id_mi;
+	local alias = minetest.registered_aliases[ name ];
+	if(alias and alias ~= "" and minetest.registered_nodes[ alias ]) then
+		name = alias;
 	end
+	alias = minetest.registered_aliases[ mirrored_name ];
+	if(alias and alias ~= "" and minetest.registered_nodes[ alias ]) then
+		mirrored_name = alias;
+	end
+	handle_schematics.mirrored_node[ name ] = mirrored_name;
+--	-- nodes do not exist; we have no chance to mirror them
+--	if(  not(minetest.registered_nodes[ name ])
+--	  or not(minetest.registered_nodes[ mirrored_name])) then
+--		return;
+--	end
+--	local id    = minetest.get_content_id( name );
+--	local id_mi = minetest.get_content_id( mirrored_name );
+--	local c_ignore = minetest.get_content_id( 'ignore' );
+--	if( id and id_mi and id ~= c_ignore  and id_mi ~= c_ignore ) then
+--		handle_schematics.mirrored_node[ id ] = id_mi;
+--	end
 end
 
 local door_materials = {'wood','steel','glass','obsidian_glass'};
