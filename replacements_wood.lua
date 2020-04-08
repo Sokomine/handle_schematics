@@ -150,13 +150,7 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 		replacements_group['wood'].data[ wood_name ] = data;
 
 		-- none of the wood nodes counts as ground
-		local c_ignore = minetest.get_content_id( 'ignore' );
-		for _,v in ipairs( data ) do
-			local id = minetest.get_content_id( v );
-			if( id and id ~= c_ignore ) then
-				replacements_group.node_is_ground[ id ] = false;
-			end
-		end
+		handle_schematics.set_node_is_ground(data, false);
 
 		if( is_loaded and minetest.get_modpath('mobf_trader') and mobf_trader and mobf_trader.add_trader ) then
 			-- TODO: check if all offered payments exist

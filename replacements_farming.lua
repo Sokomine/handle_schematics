@@ -89,14 +89,7 @@ replacements_group['farming'].add_material = function( fruit, fruit_item, prefix
 	replacements_group['farming'].data[ fruit_item ] = data;
 
 	-- farming nodes do not count as ground (except for soil - which is not handled here)
-	local c_ignore = minetest.get_content_id( 'ignore' );
-	for _,v in ipairs( data ) do
-		local id = minetest.get_content_id( v );
-		if( id and id ~= c_ignore ) then
-			replacements_group.node_is_ground[ id ] = false;
-		end
-	end
-
+	handle_schematics.set_node_is_ground(data, false);
 
 	if( is_loaded and minetest.get_modpath('mobf_trader') and mobf_trader and mobf_trader.add_trader ) then
 

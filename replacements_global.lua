@@ -116,6 +116,24 @@ handle_schematics.replace_randomized = function( replacements, new_materials )
 end
 
 
+handle_schematics.set_node_is_ground = function(data, value)
+	local c_ignore = minetest.get_content_id( 'ignore' );
+	-- none of the nodes in the data table count as ground
+	for _,v in ipairs( data ) do
+		local real_name = minetest.registered_aliases[ v ];
+		if(not(real_name)) then
+			real_name = v;
+		end
+		if(real_name and real_name ~= "" and minetest.registered_nodes[ real_name ]) then
+			local id = minetest.get_content_id( real_name );
+			if( id and id ~= c_ignore ) then
+				replacements_group.node_is_ground[ id ] = value;
+			end
+		end
+	end
+end
+
+
 -- just some examples for testing:
 --handle_schematics.global_replacement_table[ 'default:wood' ] = 'default:mese';
 --handle_schematics.global_replacement_table[ 'stairs:stair_wood' ] = 'default:diamondblock';
