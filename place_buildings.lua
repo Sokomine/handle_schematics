@@ -14,8 +14,17 @@ handle_schematics.get_content_id_replaced = function( node_name, replacements )
 	   and minetest.registered_nodes[ node_name ]) then
 		new_name = node_name
 	end
+	if(minetest.registered_aliases[ new_name ]) then
+		new_name = minetest.registered_aliases[ new_name ];
+	end
+	if(not(minetest.registered_nodes[ new_name ])) then
+		new_name = 'air';
+	end
 	return minetest.get_content_id( new_name );
 end
+
+-- shortcut (we need this function often)
+local GCIR = handle_schematics.get_content_id_replaced
 
 -- either uses get_node_or_nil(..) or the data from voxelmanip
 -- the function might as well be local (only used by *.mg_drop_moresnow)
@@ -544,21 +553,21 @@ handle_schematics.generate_building = function(pos, minp, maxp, data, param2_dat
 	-- statistic containing information about nodes that still need to be placed (only of intrest if scaffolding_only is set)
 	local missing_nodes = {};
 
-	local c_ignore = minetest.get_content_id("ignore")
-	local c_air = minetest.get_content_id("air")
-	local c_snow                 = minetest.get_content_id( "default:snow");
-	local c_dirt                 = minetest.get_content_id( "default:dirt" );
-	local c_dirt_with_grass      = minetest.get_content_id( "default:dirt_with_grass" );
-	local c_dirt_with_snow       = minetest.get_content_id( "default:dirt_with_snow" );
+	local c_ignore               = minetest.get_content_id("ignore")
+	local c_air                  = minetest.get_content_id("air")
+	local c_snow                 = GCIR( "default:snow", replacements);
+	local c_dirt                 = GCIR( "default:dirt", replacements );
+	local c_dirt_with_grass      = GCIR( "default:dirt_with_grass", replacements );
+	local c_dirt_with_snow       = GCIR( "default:dirt_with_snow", replacements );
 
-	local c_scaffolding_empty    = minetest.get_content_id( "handle_schematics:support" );
-	local c_scaffolding          = minetest.get_content_id( "handle_schematics:support_setup" );
-	local c_dig_here             = minetest.get_content_id( "handle_schematics:dig_here" );
+	local c_scaffolding_empty    = GCIR( "handle_schematics:support", replacements );
+	local c_scaffolding          = GCIR( "handle_schematics:support_setup", replacements );
+	local c_dig_here             = GCIR( "handle_schematics:dig_here", replacements );
 
 	-- freeze water if there is moresnow on top
-	cid.c_water_source       = minetest.get_content_id( "default:water_source");
-	cid.c_river_water_source = minetest.get_content_id( "default:river_water_source");
-	cid.c_ice                = minetest.get_content_id( "default:ice");
+	cid.c_water_source           = GCIR( "default:water_source", replacements);
+	cid.c_river_water_source     = GCIR( "default:river_water_source", replacements);
+	cid.c_ice                    = GCIR( "default:ice", replacements);
 
 	local scm_x = 0;
 	local scm_z = 0;
@@ -892,22 +901,22 @@ handle_schematics.place_buildings = function(village, minp, maxp, data, param2_d
 
 	local replacements = mg_villages.get_replacement_table( village.village_type, nil, village.to_add_data.replacements );
 
-	cid.c_chest            = handle_schematics.get_content_id_replaced( 'default:chest',          replacements );
-	cid.c_bookshelf        = handle_schematics.get_content_id_replaced( 'default:bookshelf',      replacements );
-	cid.c_chest_locked     = handle_schematics.get_content_id_replaced( 'default:chest_locked',   replacements );
-	cid.c_chest_shelf      = handle_schematics.get_content_id_replaced( 'cottages:shelf',         replacements );
-	cid.c_chest_ash        = handle_schematics.get_content_id_replaced( 'trees:chest_ash',        replacements );
-	cid.c_chest_aspen      = handle_schematics.get_content_id_replaced( 'trees:chest_aspen',      replacements );
-	cid.c_chest_birch      = handle_schematics.get_content_id_replaced( 'trees:chest_birch',      replacements );
-	cid.c_chest_maple      = handle_schematics.get_content_id_replaced( 'trees:chest_maple',      replacements );
-	cid.c_chest_chestnut   = handle_schematics.get_content_id_replaced( 'trees:chest_chestnut',   replacements );
-	cid.c_chest_pine       = handle_schematics.get_content_id_replaced( 'trees:chest_pine',       replacements );
-	cid.c_chest_spruce     = handle_schematics.get_content_id_replaced( 'trees:chest_spruce',     replacements );
-	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:sign_wall',      replacements );
+	cid.c_chest            = GCIR( 'default:chest',          replacements );
+	cid.c_bookshelf        = GCIR( 'default:bookshelf',      replacements );
+	cid.c_chest_locked     = GCIR( 'default:chest_locked',   replacements );
+	cid.c_chest_shelf      = GCIR( 'cottages:shelf',         replacements );
+	cid.c_chest_ash        = GCIR( 'trees:chest_ash',        replacements );
+	cid.c_chest_aspen      = GCIR( 'trees:chest_aspen',      replacements );
+	cid.c_chest_birch      = GCIR( 'trees:chest_birch',      replacements );
+	cid.c_chest_maple      = GCIR( 'trees:chest_maple',      replacements );
+	cid.c_chest_chestnut   = GCIR( 'trees:chest_chestnut',   replacements );
+	cid.c_chest_pine       = GCIR( 'trees:chest_pine',       replacements );
+	cid.c_chest_spruce     = GCIR( 'trees:chest_spruce',     replacements );
+	cid.c_sign             = GCIR( 'default:sign_wall',      replacements );
 
-	cid.c_torch            = handle_schematics.get_content_id_replaced( 'default:torch',          replacements );
-	cid.c_torch_ceiling    = handle_schematics.get_content_id_replaced( 'default:torch_ceiling',  replacements );
-	cid.c_torch_wall       = handle_schematics.get_content_id_replaced( 'default:torch_wall',     replacements );
+	cid.c_torch            = GCIR( 'default:torch',          replacements );
+	cid.c_torch_ceiling    = GCIR( 'default:torch_ceiling',  replacements );
+	cid.c_torch_wall       = GCIR( 'default:torch_wall',     replacements );
 --print('REPLACEMENTS: '..minetest.serialize( replacements.table )..' CHEST: '..tostring( minetest.get_name_from_content_id( cid.c_chest ))); -- TODO
 
 	local extranodes = {}
@@ -953,75 +962,75 @@ handle_schematics.get_cid_table = function( replacements )
 	-- only very few nodes are actually used from the cid table (content ids)
 	local cid = {};
 	cid.c_air              = minetest.get_content_id( 'air' );
-	cid.c_dirt             = handle_schematics.get_content_id_replaced( 'default:dirt',           replacements );
-	cid.c_dirt_with_grass  = handle_schematics.get_content_id_replaced( 'default:dirt_with_grass',replacements );
-	cid.c_sapling          = handle_schematics.get_content_id_replaced( 'default:sapling',        replacements );
-	cid.c_jsapling         = handle_schematics.get_content_id_replaced( 'default:junglesapling',  replacements );
-	cid.c_psapling         = handle_schematics.get_content_id_replaced( 'default:pine_sapling',   replacements );
-	cid.c_asapling         = handle_schematics.get_content_id_replaced( 'default:acacia_sapling', replacements );
-	cid.c_aspsapling       = handle_schematics.get_content_id_replaced( 'default:aspen_sapling',  replacements );
-	cid.c_savannasapling   = handle_schematics.get_content_id_replaced( 'mg:savannasapling',      replacements );
-	cid.c_pinesapling      = handle_schematics.get_content_id_replaced( 'mg:pinesapling',         replacements );
-	cid.c_plotmarker       = minetest.get_content_id('mg_villages:plotmarker');
-	cid.c_mob_spawner      = minetest.get_content_id('mg_villages:mob_spawner');
+	cid.c_dirt             = GCIR( 'default:dirt',           replacements );
+	cid.c_dirt_with_grass  = GCIR( 'default:dirt_with_grass',replacements );
+	cid.c_sapling          = GCIR( 'default:sapling',        replacements );
+	cid.c_jsapling         = GCIR( 'default:junglesapling',  replacements );
+	cid.c_psapling         = GCIR( 'default:pine_sapling',   replacements );
+	cid.c_asapling         = GCIR( 'default:acacia_sapling', replacements );
+	cid.c_aspsapling       = GCIR( 'default:aspen_sapling',  replacements );
+	cid.c_savannasapling   = GCIR( 'mg:savannasapling',      replacements );
+	cid.c_pinesapling      = GCIR( 'mg:pinesapling',         replacements );
+	cid.c_plotmarker       = GCIR( 'mg_villages:plotmarker', replacements );
+	cid.c_mob_spawner      = GCIR( 'mg_villages:mob_spawner',replacements );
 
-	cid.c_chest            = handle_schematics.get_content_id_replaced( 'default:chest',          replacements );
-	cid.c_chest_locked     = handle_schematics.get_content_id_replaced( 'default:chest_locked',   replacements );
-	cid.c_chest_shelf      = handle_schematics.get_content_id_replaced( 'cottages:shelf',         replacements );
-	cid.c_chest_ash        = handle_schematics.get_content_id_replaced( 'trees:chest_ash',        replacements );
-	cid.c_chest_aspen      = handle_schematics.get_content_id_replaced( 'trees:chest_aspen',      replacements );
-	cid.c_chest_birch      = handle_schematics.get_content_id_replaced( 'trees:chest_birch',      replacements );
-	cid.c_chest_maple      = handle_schematics.get_content_id_replaced( 'trees:chest_maple',      replacements );
-	cid.c_chest_chestnut   = handle_schematics.get_content_id_replaced( 'trees:chest_chestnut',   replacements );
-	cid.c_chest_pine       = handle_schematics.get_content_id_replaced( 'trees:chest_pine',       replacements );
-	cid.c_chest_spruce     = handle_schematics.get_content_id_replaced( 'trees:chest_spruce',     replacements );
-	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:sign_wall',      replacements );
+	cid.c_chest            = GCIR( 'default:chest',          replacements );
+	cid.c_chest_locked     = GCIR( 'default:chest_locked',   replacements );
+	cid.c_chest_shelf      = GCIR( 'cottages:shelf',         replacements );
+	cid.c_chest_ash        = GCIR( 'trees:chest_ash',        replacements );
+	cid.c_chest_aspen      = GCIR( 'trees:chest_aspen',      replacements );
+	cid.c_chest_birch      = GCIR( 'trees:chest_birch',      replacements );
+	cid.c_chest_maple      = GCIR( 'trees:chest_maple',      replacements );
+	cid.c_chest_chestnut   = GCIR( 'trees:chest_chestnut',   replacements );
+	cid.c_chest_pine       = GCIR( 'trees:chest_pine',       replacements );
+	cid.c_chest_spruce     = GCIR( 'trees:chest_spruce',     replacements );
+	cid.c_sign             = GCIR( 'default:sign_wall',      replacements );
 
-	cid.c_torch            = handle_schematics.get_content_id_replaced( 'default:torch',          replacements );
-	cid.c_torch_ceiling    = handle_schematics.get_content_id_replaced( 'default:torch_ceiling',  replacements );
-	cid.c_torch_wall       = handle_schematics.get_content_id_replaced( 'default:torch_wall',     replacements );
+	cid.c_torch            = GCIR( 'default:torch',          replacements );
+	cid.c_torch_ceiling    = GCIR( 'default:torch_ceiling',  replacements );
+	cid.c_torch_wall       = GCIR( 'default:torch_wall',     replacements );
 
 	-- for roads
-	cid.c_sign             = handle_schematics.get_content_id_replaced( 'default:gravel',         replacements );
+	cid.c_sign             = GCIR( 'default:gravel',         replacements );
 
 	-- additional entries from mg_villages
-	cid.c_ignore = minetest.get_content_id( 'ignore' );
-	cid.c_stone  = minetest.get_content_id( 'default:stone');
-	cid.c_snow   = minetest.get_content_id( 'default:snow');
-	cid.c_snowblock   = minetest.get_content_id( 'default:snowblock');
-	cid.c_dirt_with_snow  = minetest.get_content_id( 'default:dirt_with_snow' );
-	cid.c_desert_sand = minetest.get_content_id( 'default:desert_sand' ); -- PM v
-	cid.c_desert_stone  = minetest.get_content_id( 'default:desert_stone');
-	cid.c_silver_sand = minetest.get_content_id( 'default:silver_sand' ); -- PM v
-	cid.c_silver_sandstone  = minetest.get_content_id( 'default:silver_sandstone');
-	cid.c_sand = minetest.get_content_id( 'default:sand' );
-	cid.c_tree = minetest.get_content_id( 'default:tree');
-	cid.c_jtree = minetest.get_content_id( 'default:jungletree');
-	cid.c_ptree = minetest.get_content_id( 'default:pine_tree');
-	cid.c_atree    = minetest.get_content_id( 'default:acacia_tree');
-	cid.c_asptree    = minetest.get_content_id( 'default:aspen_tree');
-	cid.c_water = minetest.get_content_id( 'default:water_source'); -- PM ^
-	cid.c_stone_with_coal = minetest.get_content_id( 'default:stone_with_coal');
-	cid.c_sandstone       = minetest.get_content_id( 'default:sandstone');
+	cid.c_ignore           = minetest.get_content_id( 'ignore' );
+	cid.c_stone            = GCIR( 'default:stone', replacements);
+	cid.c_snow             = GCIR( 'default:snow', replacements);
+	cid.c_snowblock        = GCIR( 'default:snowblock', replacements);
+	cid.c_dirt_with_snow   = GCIR( 'default:dirt_with_snow', replacements );
+	cid.c_desert_sand      = GCIR( 'default:desert_sand', replacements ); -- PM v
+	cid.c_desert_stone     = GCIR( 'default:desert_stone', replacements);
+	cid.c_silver_sand      = GCIR( 'default:silver_sand', replacements ); -- PM v
+	cid.c_silver_sandstone = GCIR( 'default:silver_sandstone', replacements);
+	cid.c_sand             = GCIR( 'default:sand', replacements );
+	cid.c_tree             = GCIR( 'default:tree', replacements);
+	cid.c_jtree            = GCIR( 'default:jungletree', replacements);
+	cid.c_ptree            = GCIR( 'default:pine_tree', replacements);
+	cid.c_atree            = GCIR( 'default:acacia_tree', replacements);
+	cid.c_asptree          = GCIR( 'default:aspen_tree', replacements);
+	cid.c_water            = GCIR( 'default:water_source', replacements); -- PM ^
+	cid.c_stone_with_coal  = GCIR( 'default:stone_with_coal', replacements);
+	cid.c_sandstone        = GCIR( 'default:sandstone', replacements);
 
-	cid.c_msnow_1  = minetest.get_content_id( 'moresnow:snow_top' );
-	cid.c_msnow_2  = minetest.get_content_id( 'moresnow:snow_fence_top');
-	cid.c_msnow_3  = minetest.get_content_id( 'moresnow:snow_stair_top');
-	cid.c_msnow_4  = minetest.get_content_id( 'moresnow:snow_slab_top');
-	cid.c_msnow_5  = minetest.get_content_id( 'moresnow:snow_panel_top');
-	cid.c_msnow_6  = minetest.get_content_id( 'moresnow:snow_micro_top');
-	cid.c_msnow_7  = minetest.get_content_id( 'moresnow:snow_outer_stair_top');
-	cid.c_msnow_8  = minetest.get_content_id( 'moresnow:snow_inner_stair_top');
-	cid.c_msnow_9  = minetest.get_content_id( 'moresnow:snow_ramp_top');
-	cid.c_msnow_10 = minetest.get_content_id( 'moresnow:snow_ramp_outer_top');
-	cid.c_msnow_11 = minetest.get_content_id( 'moresnow:snow_ramp_inner_top');
-	cid.c_msnow_soil=minetest.get_content_id( 'moresnow:snow_soil' );
+	cid.c_msnow_1          = GCIR( 'moresnow:snow_top', replacements );
+	cid.c_msnow_2          = GCIR( 'moresnow:snow_fence_top', replacements);
+	cid.c_msnow_3          = GCIR( 'moresnow:snow_stair_top', replacements);
+	cid.c_msnow_4          = GCIR( 'moresnow:snow_slab_top', replacements);
+	cid.c_msnow_5          = GCIR( 'moresnow:snow_panel_top', replacements);
+	cid.c_msnow_6          = GCIR( 'moresnow:snow_micro_top', replacements);
+	cid.c_msnow_7          = GCIR( 'moresnow:snow_outer_stair_top', replacements);
+	cid.c_msnow_8          = GCIR( 'moresnow:snow_inner_stair_top', replacements);
+	cid.c_msnow_9          = GCIR( 'moresnow:snow_ramp_top', replacements);
+	cid.c_msnow_10         = GCIR( 'moresnow:snow_ramp_outer_top', replacements);
+	cid.c_msnow_11         = GCIR( 'moresnow:snow_ramp_inner_top', replacements);
+	cid.c_msnow_soil       = GCIR( 'moresnow:snow_soil', replacements );
 
-	cid.c_ice      = minetest.get_content_id( 'default:ice' );
+	cid.c_ice              = GCIR( 'default:ice', replacements );
 
 	if( minetest.get_modpath('ethereal')) then
-		cid.c_ethereal_clay_red    = minetest.get_content_id( 'bakedclay:red' );
-		cid.c_ethereal_clay_orange = minetest.get_content_id( 'bakedclay:orange' );
+		cid.c_ethereal_clay_red    = GCIR( 'bakedclay:red', replacements );
+		cid.c_ethereal_clay_orange = GCIR( 'bakedclay:orange', replacements );
 	end
 
 	return cid;
@@ -1341,7 +1350,7 @@ end
 -- dirt/sand/whatever can remain there (=biome dependant); this
 -- also means that the foundations for the ex-building's walls
 -- will keep standing
-handle_schematics.clear_area = function( start_pos, end_pos, ground_level)
+handle_schematics.clear_area = function( start_pos, end_pos, ground_level, replacements)
 
 	local vm = minetest.get_voxel_manip()
 	local minp, maxp = vm:read_from_map(
@@ -1364,7 +1373,7 @@ handle_schematics.clear_area = function( start_pos, end_pos, ground_level)
 	end
 	end
 
-	local cid_dirt = minetest.get_content_id("default:dirt");
+	local cid_dirt = GCIR("default:dirt", replacements);
 	for y=start_pos.y, ground_level-1 do
 	for x=start_pos.x, end_pos.x do
 	for z=start_pos.z, end_pos.z do
