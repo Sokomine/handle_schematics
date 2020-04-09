@@ -2,7 +2,6 @@
 handle_schematics.get_replacement_table = function( housetype, pr, replacements )
 
 	local rtable = {};
-	local ids    = {};
 	if( not( replacements ) and mg_villages and mg_villages.get_replacement_list) then
 		replacements = mg_villages.get_replacement_list( housetype, pr );
 	end
@@ -13,9 +12,8 @@ handle_schematics.get_replacement_table = function( housetype, pr, replacements 
 	for i,v in ipairs( replacements ) do
 		if( v and #v == 2 ) then
 			rtable[ v[1] ] = v[2];
-			ids[ minetest.get_content_id( v[1] )] = minetest.get_content_id( v[2] );
 		end
 	end
-        return { table = rtable, list = replacements, ids = ids };
+        return { table = rtable, list = replacements};
 end
 
