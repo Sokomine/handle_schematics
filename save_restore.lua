@@ -78,12 +78,14 @@ save_restore.file_access = function( path, params )
 	  and ( string.find( path, '.mts',  -4 )
 	     or string.find( path, '.schematic', -11 )
 	     or string.find( path, '.we',   -3 )
+	     or string.find( path, '.meta', -5 )
 	     or string.find( path, '.wem',  -4 ) )) then
 		return ie_io_open( path, params );
 	elseif( (params=='w' or params=='wb')
 	  and ( string.find( path, '.mts',  -4 )
 	     or string.find( path, '.schematic', -11 )
 	     or string.find( path, '.we',   -3 )
+	     or string.find( path, '.meta', -5 )
 	     or string.find( path, '.wem',  -4 ) )) then
 		return ie_io_open( path, params );
 	end

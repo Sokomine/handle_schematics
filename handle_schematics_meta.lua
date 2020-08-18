@@ -31,13 +31,21 @@ local handle_schematics_get_meta_table = function( pos, all_meta, start_pos )
 		invlist[ name ] = {};
 		count_inv = count_inv + 1;
 		for i, stack in ipairs(list) do
-			if( not( stack:is_empty())) then
-				invlist[ name ][ i ] = stack:to_string();
-				empty_meta = false;	
-				inv_is_empty = false;
-			end
+			invlist[ name ][ i ] = stack:to_string();
+--			if( not( stack:is_empty())) then
+--				empty_meta = false;
+--				inv_is_empty = false;
+--			end
 		end
 	end
+	all_meta[ #all_meta+1 ] = {
+		x=pos.x-start_pos.x,
+		y=pos.y-start_pos.y,
+		z=pos.z-start_pos.z,
+		fields = m.fields,
+		inventory = invlist};
+	if(true) then return; end
+
 	-- the fields part at least is unproblematic
 	local count_fields    = 0;
 	if( empty_meta and m.fields ) then
@@ -128,21 +136,35 @@ end
 handle_schematics.restore_meta = function( filename, all_meta, start_pos, end_pos, rotate, mirror )
 
 	if( not( all_meta ) and filename ) then
-		all_meta = save_restore.restore_data( filename..'.meta' );
+		local file, err = save_restore.file_access(filename, "rb")
+		if(file) then
+			all_meta = file:read("*all");
+			all_meta = minetest.deserialize(all_meta)
+			file:close();
+		end
+	end
+	if(not(all_meta)) then
+		return
 	end
 	for _,pos in ipairs( all_meta ) do
-		local p = {};
+		local p = {y = math.min(start_pos.y, start_pos.y)+pos.y}
 		if(     rotate == 0 ) then
-			p = {x=start_pos.x+pos.x-1, y=start_pos.y+pos.y-1, z=start_pos.z+pos.z-1};
+			p.x = math.min(start_pos.x, end_pos.x)+pos.x;
+			p.z = math.min(start_pos.z, end_pos.z)+pos.z;
 		elseif( rotate == 1 ) then
-			p = {x=start_pos.x+pos.z-1, y=start_pos.y+pos.y-1, z=end_pos.z  -pos.x+1};
+			p.x = math.min(start_pos.x, end_pos.x)+pos.z;
+			p.z = math.max(start_pos.z, end_pos.z)-pos.x;
+		-- rotate by 180 degrees
 		elseif( rotate == 2 ) then
-			p = {x=end_pos.x  -pos.x+1, y=start_pos.y+pos.y-1, z=end_pos.z  -pos.z+1};
+			p.x = math.max(start_pos.x, end_pos.x)-pos.x;
+			p.z = math.max(start_pos.z, end_pos.z)-pos.z;
 		elseif( rotate == 3 ) then
-			p = {x=end_pos.x  -pos.z+1, y=start_pos.y+pos.y-1, z=start_pos.z+pos.x-1};
+			p.x = math.max(start_pos.x, end_pos.x)-pos.z;
+			p.z = math.min(start_pos.z, end_pos.z)+pos.x;
 		end
 		local meta = minetest.get_meta( p );
 		meta:from_table( {inventory = pos.inventory, fields = pos.fields });
+		-- print("SETTING meta at "..minetest.serialize(p)..": "..minetest.serialize(pos.inventory));
 	end
 end
 

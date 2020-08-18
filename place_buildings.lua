@@ -1211,13 +1211,15 @@ handle_schematics.place_building_from_file_or_cache = function( start_pos, end_p
 	handle_schematics.call_door_setup( res.extra_calls.door_b );
 
 
-	if( binfo.metadata ) then
+	if( scaffolding_only ) then
+		-- metadata is not restored
+	elseif( binfo.metadata ) then
 		-- if it is a .we/.wem file, metadata was included directly
 		handle_schematics.restore_meta( nil, binfo.metadata, start_pos, end_pos, start_pos.brotate, mirror);
+	elseif( binfo.all_meta) then
+		handle_schematics.restore_meta( nil, binfo.all_meta, start_pos, end_pos, start_pos.brotate, mirror);
 	else
-		-- .mts files come with extra .meta file (if such a .meta file was created)
-		-- TODO: restore metadata for .mts files
-		--handle_schematics.restore_meta( filename, nil, binfo.metadata, start_pos, end_pos, start_pos.brotate, mirror);
+		handle_schematics.restore_meta( binfo.scm..'.meta', nil, start_pos, end_pos, start_pos.brotate, mirror);
 	end
 
 	local nodes_to_dig = 0;
