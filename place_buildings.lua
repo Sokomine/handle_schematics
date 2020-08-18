@@ -433,7 +433,7 @@ local function generate_building_what_to_place_here_and_how(t, node_content, new
 	end
 
 	-- do not overwrite plotmarkers
-	if( node_content == cid.c_plotmarker or node_content == cid.c_mob_spawner) then
+	if( node_content ~= cid.c_ignore and node_content ~= cid.c_air and (node_content == cid.c_plotmarker or node_content == cid.c_mob_spawner)) then
 		-- keep the old content
 		new_content = node_content;
 	end
