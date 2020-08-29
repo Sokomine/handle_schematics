@@ -4,8 +4,16 @@ handle_schematics.also_acceptable = {};
 
 handle_schematics.add_also_acceptable = function( name1, name2 )
 	-- only add entry if both nodes exist
-	if(  not( name1 ) or not( name2 ) or name1==name2
-	  or not( handle_schematics.node_defined( name1 ))
+	if(  not( name1 ) or not( name2 ) or name1==name2) then
+		return;
+	end
+	if( handle_schematics.global_replacement_table[ name1 ]) then
+		name1 = handle_schematics.global_replacement_table[ name1 ];
+	end
+	if( handle_schematics.global_replacement_table[ name2 ]) then
+		name2 = handle_schematics.global_replacement_table[ name2 ];
+	end
+	if(  not( handle_schematics.node_defined( name1 ))
 	  or not( handle_schematics.node_defined( name2 ))
 	  or handle_schematics.direct_instead_of_drop[ name1 ]
 	  or handle_schematics.direct_instead_of_drop[ name2 ]) then
