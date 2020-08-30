@@ -129,7 +129,11 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 			data[27] = data[16];
 			data[28] = 'doors:hidden';
 		elseif( mod_prefix=='mcl_core:') then
-			data[11] = 'mcl_fences:fence_gate_'..v;
+			local v_bak = v
+			if(v == "darkwood") then
+				v = 'dark_oak'
+			end
+			data[11] = 'mcl_fences:'..v..'_fence_gate';
 			data[12] = 'mcl_core:ladder';
 			data[13] = 'mcl_doors:'..v..'_door_t_1'; -- TODO: wooden_door
 			data[14] = 'mcl_doors:'..v..'_door_t_2';
@@ -146,6 +150,7 @@ replacements_group['wood'].add_material = function( candidate_list, mod_prefix, 
 			data[26] = data[15];
 			data[27] = data[16];
 			data[28] = data[13]; -- no way to decide automaticly which door top fits
+			v = v_bak
 		end
 		replacements_group['wood'].data[ wood_name ] = data;
 
