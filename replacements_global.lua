@@ -58,6 +58,48 @@ handle_schematics.apply_global_replacements = function(replacements, nodenames)
 end
 
 
+-- Some materials come in replacement groups, i.e. wood, roofs and farming. With this function,
+-- you can not only replace the wood itself but also tree trunk, sapling, stairs etc. so that they
+-- all fit the new material. Roof changes all roof-related nodes, and farming changes all growth
+-- stages of a plant.
+-- Parameters:
+-- 	replacements	the current list of replacements; more may be added by this function
+-- 	material_type	currently wood, roof or farming
+-- 	old_material	i.e. default:wood, default:junglewood etc.
+-- 	new_materail	if empty: select a random one; else use this as the target material
+-- Returns:
+-- 	Basic node name of the selected replacement.
+handle_schematics.replace_material = function( replacements, material_type, old_material, new_material)
+	-- do not replace anything if no group exists for it
+	if( not(replacements_group[ material_type ])) then
+		return old_material
+	end
+	-- this is a way to avoid replacements (for replace_randomized)
+	if( new_material == "" ) then
+		return old_material
+	end
+	-- if new_material is not given or does not exist, randomly select a new one
+	if( not( new_material ) or not( minetest.registered_nodes[ new_material ])) then
+		new_material =  replacements_group[ material_type ].found[
+			math.random( 1, #replacements_group[ material_type ].found )];
+	end
+	if( not( old_material )) then
+		if(     material_type == 'wood') then
+			old_material = 'default:wood'
+		elseif( material_type == 'roof') then
+			old_material = 'cottages:roof_connector_wood'
+		elseif( material_type == 'farming') then
+			old_material = 'farming:cotton'
+		end
+	end
+	if( new_material == old_material ) then
+		return old_material
+	end
+	replacements_group[ material_type ].replace_material( replacements, old_material, new_material);
+	return new_material
+end
+
+
 -- applies all necessary replacements:
 --  * discontinued chests from cottages
 --  * changed nodes in minetest_game such as doors etc.
@@ -82,24 +124,19 @@ handle_schematics.replace_randomized = function( replacements, new_materials )
 	table.insert( replacements, {"cottages:chest_storage", "default:chest"});
 
 	-- replace the wood
-	if( not(new_materials['wood']) or not( minetest.registered_nodes[ new_materials['wood'] ])) then
-		new_materials['wood'] =  replacements_group['wood'].found[
-			math.random( 1, #replacements_group['wood'].found )];
-	end
-	replacements_group['wood'].replace_material( replacements, "default:wood", new_materials['wood']);
+	handle_schematics.replace_material( replacements, 'wood',    nil, new_materials['wood'])
 	-- change the roof to a random material
-	if( not(new_materials['roof']) or not( minetest.registered_nodes[ new_materials['roof'] ])) then
-		new_materials['roof'] =  replacements_group['roof'].found[
-			math.random( 1, #replacements_group['roof'].found )];
-	end
-	replacements_group['roof'].replace_material( replacements, "cottages:roof_connector_wood", new_materials['roof']);
+	handle_schematics.replace_material( replacements, 'roof',    nil, new_materials['roof'])
 	-- grow random fruit instead of just cotton
-	if( not(new_materials['farming']) or not( minetest.registered_nodes[ new_materials['farming'] ])) then
-		new_materials['farming'] =  replacements_group['farming'].found[
-			   math.random( 1, #replacements_group['farming'].found )];
-	end
-	replacements_group['farming'].replace_material( replacements, "farming:cotton", new_materials["farming"] );
+	handle_schematics.replace_material( replacements, 'farming', nil, new_materials['farming'])
 
+	return handle_schematics.apply_global_replacements(replacements)
+end
+
+
+-- makes sure all global replacements (including those from MineClone2 and those
+-- from RealTest) are added to the list of replacements
+handle_schematics.apply_global_replacements = function(replacements)
 	-- if this is the subgame realtest then apply the necessary replacements;
 	-- handle_schematics.is_realtest is set in init.lua of handle_schematics,
 	-- depending on mods installed and found in RealTest
@@ -107,9 +144,24 @@ handle_schematics.replace_randomized = function( replacements, new_materials )
 		replacements = replacements_group['realtest'].replace( replacements );
 	end
 
+	-- we need to add global replacements - but only for those nodes that have not been
+	-- replaced yet
+	local as_table = {}
+	for i, v in ipairs( replacements ) do
+		as_table[ v[1] ] = v[2]
+	end
 	-- support global replacements
 	for old_material, new_material in pairs( handle_schematics.global_replacement_table ) do
-		table.insert( replacements, {old_material, new_material} );
+		-- only replace materials that have not yet been replaced
+		if(not(as_table[old_material])) then
+			-- if there is already a replacement for the new material: remember that and
+			-- replace old_material into this new one
+			if(not(as_table[new_material])) then
+				table.insert( replacements, {old_material, new_material} )
+			else
+				table.insert( replacements, {old_material, as_table[new_material]} )
+			end
+		end
 	end
 
 	return replacements;
