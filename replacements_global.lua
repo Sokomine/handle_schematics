@@ -87,7 +87,7 @@ handle_schematics.replace_material = function( replacements, material_type, old_
 		if(     material_type == 'wood') then
 			old_material = 'default:wood'
 		elseif( material_type == 'roof') then
-			old_material = 'cottages:roof_connector_wood'
+			old_material = 'cottages:roof_connector_straw'
 		elseif( material_type == 'farming') then
 			old_material = 'farming:cotton'
 		end
