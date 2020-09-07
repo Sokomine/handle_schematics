@@ -17,6 +17,10 @@ handle_schematics.get_content_id_replaced = function( node_name, replacements )
 	if(minetest.registered_aliases[ new_name ]) then
 		new_name = minetest.registered_aliases[ new_name ];
 	end
+	-- apply global replacements
+	if(handle_schematics.global_replacement_table[ new_name ]) then
+		new_name = handle_schematics.global_replacement_table[ new_name ]
+	end
 	if(not(minetest.registered_nodes[ new_name ])) then
 		new_name = 'air';
 	end
