@@ -16,6 +16,7 @@ replacements_group['mineclone2'].setup_global_replacements = function()
 		"clay","cobble","mossycobble","coalblock","ironblock","goldblock","diamondblock",
 		"obsidian","ice","cactus","ladder","glass",
 		"water_flowing","water_source","lava_flowing","lava_source",
+		"snowblock", "snow"
 
 		};
 	for i,k in ipairs( simple_translation ) do
@@ -26,6 +27,7 @@ replacements_group['mineclone2'].setup_global_replacements = function()
 			replacements_group['mineclone2'].replace_one( 'stairs:slab_'..k, 'mcl_stairs:slab_'..k);
 		end
 	end
+	replacements_group['mineclone2'].replace_one( 'default:dirt_with_snow', 'mcl_core:dirt_with_grass_snow')
 	replacements_group['mineclone2'].replace_one( 'default:brick', 'mcl_core:brick_block');
 	replacements_group['mineclone2'].replace_one( 'stairs:stair_brick', 'mcl_stairs:stair_brick_block');
 	replacements_group['mineclone2'].replace_one( 'stairs:stair_inner_brick', 'mcl_stairs:stair_brick_block_inner');
