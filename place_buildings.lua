@@ -315,13 +315,7 @@ local function generate_building_translate_nodenames( nodenames, replacements, c
 			elseif( new_content == cid.c_dirt ) then
 				new_nodes[ i ].is_dirt      = 1;
 		
-			elseif( new_content == cid.c_sapling
-			     or new_content == cid.c_jsapling
-			     or new_content == cid.c_psapling
-			     or new_content == cid.c_asapling
-			     or new_content == cid.c_aspsapling
-			     or new_content == cid.c_savannasapling
-			     or new_content == cid.c_pinesapling ) then
+			elseif( handle_schematics.is_sapling[ new_content ]) then
 				-- store that a tree is to be grown there
 				new_nodes[ i ].is_tree      = 1;
 
@@ -968,13 +962,7 @@ handle_schematics.get_cid_table = function( replacements )
 	cid.c_air              = minetest.get_content_id( 'air' );
 	cid.c_dirt             = GCIR( 'default:dirt',           replacements );
 	cid.c_dirt_with_grass  = GCIR( 'default:dirt_with_grass',replacements );
-	cid.c_sapling          = GCIR( 'default:sapling',        replacements );
-	cid.c_jsapling         = GCIR( 'default:junglesapling',  replacements );
-	cid.c_psapling         = GCIR( 'default:pine_sapling',   replacements );
-	cid.c_asapling         = GCIR( 'default:acacia_sapling', replacements );
-	cid.c_aspsapling       = GCIR( 'default:aspen_sapling',  replacements );
-	cid.c_savannasapling   = GCIR( 'mg:savannasapling',      replacements );
-	cid.c_pinesapling      = GCIR( 'mg:pinesapling',         replacements );
+
 	cid.c_plotmarker       = GCIR( 'mg_villages:plotmarker', replacements );
 	cid.c_mob_spawner      = GCIR( 'mg_villages:mob_spawner',replacements );
 

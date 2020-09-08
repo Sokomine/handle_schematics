@@ -297,3 +297,15 @@ end
 -- actually construct the data structure once
 replacements_group['wood'].construct_wood_type_list();
 
+-- needed by handle_schematics.generate_building_translate_nodenames
+-- in order to identify saplings that need to be grown
+handle_schematics.is_sapling = {}
+for k,v in pairs(replacements_group['wood'].data) do
+	-- if tree trunk and sapling exist in this game
+	if(   minetest.registered_nodes[v[6]]) then
+		-- both the name of the sapling..
+		handle_schematics.is_sapling[v[6]] = true
+		-- ..and its content_id are saplings
+		handle_schematics.is_sapling[minetest.get_content_id(v[6])] = true
+	end
+end
