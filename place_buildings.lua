@@ -545,7 +545,7 @@ handle_schematics.generate_building = function(pos, minp, maxp, data, param2_dat
 
 	-- the fruit is set per building, not per village as the other replacements
 	if( binfo.farming_plus and binfo.farming_plus == 1 and pos.fruit and mg_villages) then
-		mg_villages.get_fruit_replacements( replacements, pos.fruit);
+		local plant = handle_schematics.replace_material( replacements.list, 'farming', nil, nil)
 	end
 
 	-- statistic containing information about nodes that still need to be placed (only of intrest if scaffolding_only is set)
