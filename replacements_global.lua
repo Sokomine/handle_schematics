@@ -192,3 +192,8 @@ end
 
 -- many people prefer the new 3d torch even if it will melt some snow
 handle_schematics.global_replacement_table[ 'mg_villages:torch' ] = 'default:torch';
+
+-- for the mg mapgen
+if(minetest.registered_nodes['default:mg_water_source']) then
+	handle_schematics.global_replacement_table[ 'default:water_source' ] = 'default:mg_water_source';
+end
