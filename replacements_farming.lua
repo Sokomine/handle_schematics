@@ -146,7 +146,8 @@ replacements_group['farming'].construct_farming_type_list = function()
 	for i,fruit in ipairs( fruits ) do
 		if(     handle_schematics.node_defined( 'farming_plus:'..fruit )
 		    and handle_schematics.node_defined( 'farming_plus:'..fruit..'_1' )
-		    and handle_schematics.node_defined( 'farming_plus:'..fruit..'_item' )) then
+		    -- this is often just a craftitem and only rarely a node
+		    and minetest.registered_items['farming_plus:'..fruit..'_item' ]) then
 			replacements_group['farming'].add_material( fruit, 'farming_plus:'..fruit..'_item',   'farming_plus:', '_', '' );
 		end
 	end
