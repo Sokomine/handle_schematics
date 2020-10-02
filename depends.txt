@@ -31,3 +31,9 @@ mcl_books?
 mcl_chests?
 mcl_torches?
 mcl_signs?
+mcl_biomes?
+mcl_dungeons?
+mcl_mapgen_core?
+mcl_strongholds?
+mcl_structures?
+tsm_railcorridor?
