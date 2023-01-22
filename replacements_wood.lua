@@ -197,7 +197,10 @@ replacements_group['wood'].construct_wood_type_list = function()
 		'stairs:stair_', 'wood', 'stairs:slab_', 'wood',   'default:fence_','wood',  'doors:gate_', 'wood' );
 	-- default:pine_needles instead of leaves; no gates available
 	replacements_group['wood'].add_material( {'pine' },           'default:', '','_wood','', '_tree',  '','_needles','','_sapling',
-		'stairs:stair_', 'wood', 'stairs:slab_', 'wood',   'default:fence_','_wood',  'doors:gate_','_wood' );
+		--[[ bugfix 1/2 by tagacraft at free.fr : 
+		      on the line below, the stair & slab suffix had no '_' before 'wood', leading to server crash on map generated : ]]
+		'stairs:stair_', '_wood', 'stairs:slab_', '_wood',   'default:fence_','_wood',  'doors:gate_','_wood' );
+		-- End of bugfix (1/2) --
 	-- acacia and aspen
 	replacements_group['wood'].add_material( {'acacia', 'aspen'},  'default:', '','_wood','', '_tree',  '','_leaves',  '','_sapling',
 		'stairs:stair_', '_wood', 'stairs:slab_', '_wood',   'default:fence_','_wood',  'doors:gate_', '_wood' );
@@ -205,8 +208,10 @@ replacements_group['wood'].construct_wood_type_list = function()
 	-- https://github.com/Novatux/mg
 	-- trees from nores mapgen
 	replacements_group['wood'].add_material( {'savanna', 'pine' },'mg:',     '','wood','', 'tree',  '','leaves',  '','sapling',
-		'stairs:stair_','wood',  'stairs:slab_','wood',    'NONE','',  'NONE','');
-
+		--[[ bugfix 2/2 by tagacraft at free.fr : 
+		      on the line below, the stair & slab suffix had no '_' before 'wood', leading to server crash on map generated : ]]
+		'stairs:stair_','_wood',  'stairs:slab_','_wood',    'NONE','',  'NONE','');
+		-- End of bugfix (2/2) --
 
 	-- https://github.com/VanessaE/moretrees
 	-- minus the jungletree (already in default)
