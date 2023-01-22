@@ -4,6 +4,7 @@ farming?
 farming_plus?
 wool?
 stairs?
+stairsplus?
 cottages?
 moretrees?
 trees?
